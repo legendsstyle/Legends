@@ -163,6 +163,31 @@ const PencilLine = mkIcon("✎");
    بين كل الأجهزة، تحتاج قاعدة بيانات فعلية (مثل Supabase أو Firebase). */
 const SUPABASE_URL = "https://jjlevqwwxmmefcbnixoh.supabase.co";
 const SUPABASE_KEY = "sb_publishable_DRszk6UuzTtKhbdffBb8Eg_JBT0TWV3";
+// ===== جلسة المدير (في الذاكرة فقط، تنتهي بإعادة تحميل الصفحة) =====
+let _adminSession = null;
+async function adminAuthCall(grant, body) {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=" + grant, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error("auth failed");
+    return res.json();
+}
+async function adminLogin(email, password) {
+    _adminSession = await adminAuthCall("password", { email: email.trim(), password });
+    try {
+        const r = await sbRequest("rpc/is_admin", { method: "POST", body: "{}" });
+        if ((await r.json()) !== true) throw new Error("not admin");
+    } catch (e) { _adminSession = null; throw e; }
+}
+async function refreshAdminSession() {
+    try {
+        _adminSession = await adminAuthCall("refresh_token", { refresh_token: _adminSession.refresh_token });
+        return true;
+    } catch (e) { _adminSession = null; return false; }
+}
+function adminLogout() { _adminSession = null; }
 async function sbRequest(path, options = {}) {
     // مهلة قصوى 25 ثانية حتى لا يتعلّق الموقع إذا تأخر الاتصال
     const ctrl = new AbortController();
@@ -174,7 +199,7 @@ async function sbRequest(path, options = {}) {
             signal: ctrl.signal,
             headers: {
                 apikey: SUPABASE_KEY,
-                Authorization: "Bearer " + SUPABASE_KEY,
+                Authorization: "Bearer " + (_adminSession ? _adminSession.access_token : SUPABASE_KEY),
                 "Content-Type": "application/json",
                 ...(options.headers || {}),
             },
@@ -186,6 +211,9 @@ async function sbRequest(path, options = {}) {
         throw e;
     }
     clearTimeout(timer);
+    if (res.status === 401 && _adminSession && !options._retried) {
+        if (await refreshAdminSession()) return sbRequest(path, { ...options, _retried: true });
+    }
     if (!res.ok) {
         const text = await res.text().catch(() => "");
         throw new Error("Supabase " + res.status + " على الجدول \"" + path.split("?")[0] + "\" — " + (text || "بدون تفاصيل"));
@@ -280,33 +308,44 @@ window.storage = {
         if (key === "products") {
             return { key, value: JSON.stringify(await loadProductsFromDB()), shared };
         }
-        const res = await sbRequest(key + "?id=eq." + encodeURIComponent(key) + "&select=data");
-        const rows = await res.json();
-        if (!rows.length) throw new Error("key not found");
-        return { key, value: JSON.stringify(rows[0].data), shared };
+        if (key === "orders") {
+            const res = await sbRequest("orders_v2?select=data&order=created_at.desc");
+            const rows = await res.json();
+            return { key, value: JSON.stringify(rows.map(r => r.data)), shared };
+        }
+        throw new Error("key not found");
     },
     async set(key, value, shared = false) {
         if (key === "products") return { key, value, shared };
-        await sbRequest(key, {
-            method: "POST",
-            headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-            body: JSON.stringify([{ id: key, data: JSON.parse(value) }])
-        });
-        return { key, value, shared };
+        throw new Error("write not supported");
     },
-    async delete(key, shared = false) {
-        await sbRequest(key + "?id=eq." + encodeURIComponent(key), { method: "DELETE" });
-        return { key, deleted: true, shared };
-    },
+    async delete(key, shared = false) { throw new Error("delete not supported"); },
     async list() { return { keys: [] }; },
 };
+// ===== إنشاء طلب (للزوار): التحقق والخصم وحساب السعر كلها على الخادم =====
+async function placeOrderDB(order) {
+    const res = await sbRequest("rpc/place_order", {
+        method: "POST",
+        body: JSON.stringify({ p_order: {
+            customerName: order.customerName, phone: order.phone, city: order.city, notes: order.notes,
+            items: order.items.map(i => ({ productId: i.productId, size: i.size, color: i.color, qty: i.qty }))
+        } })
+    });
+    return res.json();
+}
+// ===== تغيير حالة الطلب (للمدير فقط) + إرجاع المخزون عند الإلغاء =====
+async function updateOrderStatusDB(id, status) {
+    const res = await sbRequest("rpc/update_order_status", {
+        method: "POST", body: JSON.stringify({ p_id: id, p_status: status })
+    });
+    return res.json();
+}
 /* ============ ثوابت العلامة التجارية ============ */
 const STORE_NAME = "LEGENDS_STYLE";
 const STORE_TAGLINE = "أساطير الملعب تلبس هنا";
 const CATEGORIES = ["قمصان الأندية", "قمصان المنتخبات", "ملابس تدريب", "نسخة الجماهير", "نسخة اللاعبين 26", "نسخة اللاعبين 27", "نسخة خاصة", "صيفي", "أكمام طويلة", "كلاسيك", "شورتات", "أطفال", "نسائي", "ملابس رياضية"];
 const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "20", "22", "24", "26", "28", "39", "40", "41", "42", "43"];
 const LOW_STOCK = 3;
-const ADMIN_PIN = "2580"; // بإمكانك تغييرها أو تطلب مني أعدلها لاحقاً
 const STORE_WHATSAPP = "96877116435";
 const STORE_EMAIL = "Balhbsy504@gmail.com"; // غيّرها لرقم واتساب متجرك الفعلي
 const GENDERS = ["رجال", "نساء", "أطفال"];
@@ -714,6 +753,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
     };
     const removeItem = (idx) => setCart(prev => prev.filter((_, i) => i !== idx));
     const submitOrder = async (form) => {
+        let placedOrder = null;
         const order = {
             id: genId("order"),
             customerName: form.name,
@@ -728,7 +768,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         };
         try {
             // خصم ذري على الخادم — يمنع بيع نفس القطعة مرتين
-            await deductStockAtomic(cart);
+            placedOrder = await placeOrderDB(order);
         }
         catch (e) {
             const msg = (e && e.message) || String(e);
@@ -739,12 +779,11 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             }
             return;
         }
-        await onOrderPlaced(order);
         try { await refreshProducts(); } catch (e) { }
         setCart([]);
         setShowCheckout(false);
         setShowCart(false);
-        setSuccessOrder(order);
+        setSuccessOrder(placedOrder || order);
     };
     return (React.createElement("div", { className: "min-h-screen bg-[#22201E]" },
         React.createElement("header", { className: "sticky top-0 z-30 bg-[#22201E]/90 backdrop-blur border-b border-[#3A3632]" },
@@ -877,40 +916,14 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
         }
     };
     const updateOrderStatus = async (orderId, status) => {
-        const isCancel = status === "ملغي";
-
-        // ===== 1) اقرأ آخر نسخة من الطلبات =====
-        let latestOrders = Array.isArray(orders) ? orders : [];
         try {
-            const latestO = await window.storage.get("orders", true);
-            const parsed = JSON.parse(latestO.value);
-            if (Array.isArray(parsed)) latestOrders = parsed;
+            const updated = await updateOrderStatusDB(orderId, status);
+            await saveOrders(orders.map(o => o.id === orderId ? updated : o));
+            if (status === "ملغي") { try { await refreshProducts(); } catch (e) { } }
         }
-        catch (e) { }
-
-        const order = latestOrders.find(o => o.id === orderId);
-        const needsRestore = isCancel && order && !order.stockRestored;
-
-        // ===== 2) أرجِع الكميات ذرياً على الخادم (حمولة بضع بايتات) =====
-        let restored = false;
-        if (needsRestore) {
-            try {
-                await restockAtomic(order.items);
-                restored = true;
-            }
-            catch (e) {
-                onError && onError("تم تغيير حالة الطلب، لكن تعذّر إرجاع الكميات للمخزون: " + (e && e.message ? e.message : String(e)));
-            }
+        catch (e) {
+            onError && onError("تعذّر تحديث الطلب: " + (e && e.message ? e.message : String(e)));
         }
-
-        // ===== 3) احفظ الحالة =====
-        const updatedOrders = latestOrders.map(o => o.id === orderId
-            ? { ...o, status, stockRestored: isCancel ? (restored || o.stockRestored) : o.stockRestored }
-            : o);
-        await saveOrders(updatedOrders);
-
-        // ===== 4) حدّث المخزون المعروض =====
-        if (restored) { try { await refreshProducts(); } catch (e) { } }
     };
     const statusColor = { "جديد": "bg-[#1C2B3F] text-[#93C5FD]", "قيد التجهيز": "bg-[#3E3312] text-[#C9A227]", "تم التسليم": "bg-[#1E3A2C] text-[#6EE7A8]", "ملغي": "bg-[#3A1D1D] text-[#F0A0A0]" };
     return (React.createElement("div", { className: "min-h-screen bg-[#22201E] font-body" },
@@ -1026,14 +1039,24 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
 }
 /* ============ بوابة دخول الأدمن ============ */
 function AdminGate({ onSuccess, onCancel }) {
-    const [pin, setPin] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [error, setError] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const submit = async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await adminLogin(email, password); onSuccess(); }
+        catch (e) { setError(true); setBusy(false); }
+    };
+    const inputCls = "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746B] outline-none";
     return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onCancel },
-        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-xs w-full ring-1 ring-[#3A3632] p-6 space-y-3 font-body", onClick: e => e.stopPropagation() },
-            React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg text-center" }, "\u062F\u062E\u0648\u0644 \u0644\u0648\u062D\u0629 \u0627\u0644\u062A\u062D\u0643\u0645"),
-            React.createElement("input", { type: "password", value: pin, onChange: e => { setPin(e.target.value); setError(false); }, placeholder: "\u0627\u0644\u0631\u0645\u0632 \u0627\u0644\u0633\u0631\u064A", className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none text-center tracking-widest" }),
-            error && React.createElement("p", { className: "text-[#F0A0A0] text-xs text-center" }, "\u0627\u0644\u0631\u0645\u0632 \u063A\u064A\u0631 \u0635\u062D\u064A\u062D"),
-            React.createElement("button", { onClick: () => pin === ADMIN_PIN ? onSuccess() : setError(true), className: "w-full py-2.5 rounded-xl bg-[#F5F3F0] text-[#22201E] font-bold" }, "\u062F\u062E\u0648\u0644"))));
+        React.createElement("form", { className: "bg-[#2A2724] rounded-2xl max-w-xs w-full ring-1 ring-[#3A3632] p-6 space-y-3 font-body", onClick: e => e.stopPropagation(), onSubmit: e => { e.preventDefault(); submit(); } },
+            React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg text-center" }, "دخول لوحة التحكم"),
+            React.createElement("input", { type: "email", autoComplete: "username", dir: "ltr", value: email, onChange: e => { setEmail(e.target.value); setError(false); }, placeholder: "البريد الإلكتروني", className: inputCls }),
+            React.createElement("input", { type: "password", autoComplete: "current-password", dir: "ltr", value: password, onChange: e => { setPassword(e.target.value); setError(false); }, placeholder: "كلمة المرور", className: inputCls }),
+            error && React.createElement("p", { className: "text-[#F0A0A0] text-xs text-center" }, "بيانات الدخول غير صحيحة"),
+            React.createElement("button", { type: "submit", disabled: busy, className: "w-full py-2.5 rounded-xl bg-[#F5F3F0] text-[#22201E] font-bold disabled:opacity-60" }, busy ? "..." : "دخول"))));
 }
 /* ============ التطبيق الرئيسي ============ */
 function App() {
@@ -1054,13 +1077,6 @@ function App() {
             catch (e) {
                 setProducts(IMPORTED_PRODUCTS);
             }
-            try {
-                const o = await window.storage.get("orders", true);
-                setOrders(JSON.parse(o.value));
-            }
-            catch (e) {
-                setOrders([]);
-            }
             setLoading(false);
         })();
     }, []);
@@ -1075,14 +1091,7 @@ function App() {
         }
         catch (e) { setSaveError("تعذّر تحديث المنتجات: " + (e && e.message ? e.message : String(e))); }
     };
-    const saveOrders = async (updated) => {
-        setOrders(updated);
-        try {
-            await window.storage.set("orders", JSON.stringify(updated), true);
-            setSaveError(null);
-        }
-        catch (e) { setSaveError("فشل حفظ الطلبات: " + (e && e.message ? e.message : String(e))); }
-    };
+    const saveOrders = async (updated) => { setOrders(updated); };
     const addOrder = async (order) => {
         const updated = [...orders, order];
         await saveOrders(updated);
@@ -1116,7 +1125,7 @@ function App() {
                 : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
             React.createElement("button", { onClick: () => setShowGate(true), className: "fixed bottom-4 left-4 w-10 h-10 rounded-full bg-[#2A2724] ring-1 ring-[#3A3632] text-[#8A847B] flex items-center justify-center z-20" },
                 React.createElement(Settings, { size: 16 })),
-            showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshAll(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { setView("store"); refreshAll(); } }))));
+            showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshAll(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { adminLogout(); setView("store"); refreshAll(); } }))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
 </script>
