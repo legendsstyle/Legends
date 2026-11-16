@@ -505,9 +505,9 @@ function CartModal({ cart, products, onClose, onUpdateQty, onRemove, onCheckout 
 }
 /* ============ نموذج إتمام الطلب ============ */
 function CheckoutModal({ cart, onClose, onSubmit }) {
-    const [form, setForm] = useState({ name: "", phone: "", city: "", notes: "" });
+    const [form, setForm] = useState({ name: "", phone: "", city: "", delivery: "", notes: "" });
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const canSubmit = form.name.trim() && form.phone.trim();
+    const canSubmit = form.name.trim() && form.phone.trim() && form.delivery;
     return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
         React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
             React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
@@ -518,6 +518,16 @@ function CheckoutModal({ cart, onClose, onSubmit }) {
                 React.createElement("input", { placeholder: "\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644", value: form.name, onChange: e => setForm({ ...form, name: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
                 React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u062C\u0648\u0627\u0644", value: form.phone, onChange: e => setForm({ ...form, phone: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
                 React.createElement("input", { placeholder: "\u0627\u0644\u0645\u062F\u064A\u0646\u0629 / \u0627\u0644\u0639\u0646\u0648\u0627\u0646", value: form.city, onChange: e => setForm({ ...form, city: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                React.createElement("label", { className: "block space-y-1 text-sm text-[#C4BDB4]" },
+                    React.createElement("span", null, "توصيل للمكتب / للمنزل"),
+                    React.createElement("select", {
+                        value: form.delivery,
+                        onChange: e => setForm({ ...form, delivery: e.target.value }),
+                        className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none focus:ring-2 ring-[#5A544C]"
+                    },
+                        React.createElement("option", { value: "", disabled: true }, "اختر مكان التوصيل"),
+                        React.createElement("option", { value: "المكتب" }, "المكتب"),
+                        React.createElement("option", { value: "المنزل" }, "المنزل"))),
                 React.createElement("textarea", { placeholder: "\u0645\u0644\u0627\u062D\u0638\u0627\u062A (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)", value: form.notes, onChange: e => setForm({ ...form, notes: e.target.value }), rows: 2, className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
                 React.createElement("div", { className: "flex items-center justify-between font-display font-bold pt-2" },
                     React.createElement("span", { className: "text-[#C4BDB4]" }, "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A"),
@@ -526,9 +536,21 @@ function CheckoutModal({ cart, onClose, onSubmit }) {
 }
 /* ============ تأكيد الطلب ============ */
 function OrderSuccessModal({ order, onClose }) {
-    const waText = encodeURIComponent(`طلب جديد #${order.id.slice(-5)}\nالاسم: ${order.customerName}\nالجوال: ${order.phone}\nالمدينة: ${order.city}\n` +
-        order.items.map(i => `- ${i.name} (${i.size}/${i.color}) x${i.qty}`).join("\n") +
-        `\nالإجمالي: ${fmt(order.total)}`);
+    const waText = encodeURIComponent([
+        `*LEGENDS | طلب جديد رقم ${order.id.slice(-5).replace(/^_/, "")}*`,
+        "",
+        "*بيانات الطلب*",
+        `الاسم: ${order.customerName}`,
+        `الرقم: ${order.phone}`,
+        `المدينة: ${order.city || "—"}`,
+        `توصيل للمكتب / للمنزل: ${order.delivery}`,
+        "",
+        "*تفاصيل الطلب*",
+        ...order.items.map(item =>
+            `${item.name} | المقاس: ${item.size} | الخيار: ${item.color ?? "عادي"} | الكمية: ${item.qty}`),
+        "",
+        `*إجمالي الطلب: ${Number(order.total).toFixed(3)} ر.ع.*`,
+    ].join("\n"));
     return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" },
         React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-sm w-full ring-1 ring-[#5A544C] p-6 text-center font-body space-y-4" },
             React.createElement("div", { className: "w-14 h-14 rounded-full bg-[#F5F3F0] flex items-center justify-center mx-auto" },
@@ -759,7 +781,9 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             customerName: form.name,
             phone: form.phone,
             city: form.city,
-            notes: form.notes,
+            notes: [`توصيل للمكتب / للمنزل: ${form.delivery}`, form.notes.trim()]
+                .filter(Boolean)
+                .join("\n"),
             items: cart,
             total: cart.reduce((s, i) => s + i.price * i.qty, 0),
             status: "جديد",
@@ -783,7 +807,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         setCart([]);
         setShowCheckout(false);
         setShowCart(false);
-        setSuccessOrder(placedOrder || order);
+        setSuccessOrder({ ...(placedOrder || order), delivery: form.delivery });
     };
     return (React.createElement("div", { className: "min-h-screen bg-[#22201E]" },
         React.createElement("header", { className: "sticky top-0 z-30 bg-[#22201E]/90 backdrop-blur border-b border-[#3A3632]" },
