@@ -235,8 +235,15 @@ function bundledImage(id) {
 
 // ===== قراءة المنتجات من الجداول المُطبّعة (بدون صور: حجم صغير جداً) =====
 async function loadProductsFromDB() {
-    const res = await sbRequest("products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc");
-    const rows = await res.json();
+    const query = "products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc";
+    const rows = [];
+    const batchSize = 500;
+    while (true) {
+        const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + rows.length);
+        const batch = await res.json();
+        if (!batch.length) break;
+        rows.push(...batch);
+    }
     return rows.map(r => ({
         id: r.id,
         name: r.name,
@@ -1023,10 +1030,10 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                     products.length,
                     " \u0645\u0646\u062A\u062C"),
                 React.createElement("div", { className: "space-y-2" },
-                    filteredAdminProducts.slice(0, 60).map(p => (React.createElement("div", { key: p.id, className: "bg-[#2A2724] rounded-xl p-3 ring-1 ring-[#3A3632] flex items-center justify-between gap-3" },
+                    filteredAdminProducts.map(p => (React.createElement("div", { key: p.id, className: "bg-[#2A2724] rounded-xl p-3 ring-1 ring-[#3A3632] flex items-center justify-between gap-3" },
                         React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
                             p.image
-                                ? React.createElement("img", { src: p.image, alt: p.name, className: "w-12 h-12 rounded-lg object-cover flex-shrink-0" })
+                                ? React.createElement("img", { src: p.image, alt: p.name, loading: "lazy", className: "w-12 h-12 rounded-lg object-cover flex-shrink-0" })
                                 : React.createElement("div", { className: "w-12 h-12 rounded-lg bg-[#332F2B] flex-shrink-0" }),
                             React.createElement("div", { className: "min-w-0" },
                                 React.createElement("p", { className: "font-bold text-[#F5F3F0] truncate" }, p.name),
@@ -1040,8 +1047,7 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                             React.createElement("button", { onClick: () => { setEditing(p); setShowForm(true); }, className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#C4BDB4] flex items-center justify-center" },
                                 React.createElement(PencilLine, { size: 14 })),
                             React.createElement("button", { onClick: () => deleteProduct(p.id), className: "w-8 h-8 rounded-lg bg-[#3A1D1D] text-[#F0A0A0] flex items-center justify-center" },
-                                React.createElement(Trash2, { size: 14 })))))),
-                    filteredAdminProducts.length > 60 && React.createElement("p", { className: "text-center text-[#8A847B] text-sm py-2" }, "\u0636\u064A\u0651\u0642 \u0627\u0644\u0628\u062D\u062B \u0644\u0639\u0631\u0636 \u0627\u0644\u0645\u0632\u064A\u062F \u0645\u0646 \u0627\u0644\u0646\u062A\u0627\u0626\u062C (\u064A\u0639\u0631\u0636 \u0623\u0648\u0644 60 \u0641\u0642\u0637)")))),
+                                React.createElement(Trash2, { size: 14 }))))))))),
             tab === "orders" && (React.createElement("div", { className: "space-y-3" },
                 orders.length === 0 && React.createElement("p", { className: "text-[#8A847B] text-center py-10" }, "\u0645\u0627 \u0641\u064A\u0647 \u0637\u0644\u0628\u0627\u062A \u0644\u0633\u0627"),
                 [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(o => (React.createElement("div", { key: o.id, className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632] space-y-2" },
