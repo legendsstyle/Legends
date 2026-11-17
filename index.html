@@ -507,7 +507,12 @@ function CartModal({ cart, products, onClose, onUpdateQty, onRemove, onCheckout 
 function CheckoutModal({ cart, onClose, onSubmit }) {
     const [form, setForm] = useState({ name: "", phone: "", city: "", delivery: "", notes: "" });
     const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
-    const canSubmit = form.name.trim() && form.phone.trim() && form.delivery;
+    const phone = form.phone.trim()
+        .replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15))
+        .replace(/[\s-]/g, "");
+    const validPhone = /^(?:\+968|00968)?[79][0-9]{7}$/.test(phone);
+    const city = form.city.trim();
+    const canSubmit = Boolean(form.name.trim() && validPhone && city && form.delivery);
     return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
         React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
             React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
@@ -516,8 +521,10 @@ function CheckoutModal({ cart, onClose, onSubmit }) {
                     React.createElement(X, { size: 20 }))),
             React.createElement("div", { className: "p-4 space-y-3" },
                 React.createElement("input", { placeholder: "\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644", value: form.name, onChange: e => setForm({ ...form, name: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
-                React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u062C\u0648\u0627\u0644", value: form.phone, onChange: e => setForm({ ...form, phone: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u062C\u0648\u0627\u0644", type: "tel", autoComplete: "tel", value: form.phone, onChange: e => setForm({ ...form, phone: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
                 React.createElement("input", { placeholder: "\u0627\u0644\u0645\u062F\u064A\u0646\u0629 / \u0627\u0644\u0639\u0646\u0648\u0627\u0646", value: form.city, onChange: e => setForm({ ...form, city: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                form.phone.trim() && !validPhone && React.createElement("p", { className: "text-sm text-[#F2B8B8]" }, "أدخل رقم جوال عُماني صحيح من ٨ أرقام، ويمكنك إضافة ‎+968."),
+                !city && React.createElement("p", { className: "text-xs text-[#C4BDB4]" }, "المدينة أو العنوان مطلوب لإتمام الطلب."),
                 React.createElement("label", { className: "block space-y-1 text-sm text-[#C4BDB4]" },
                     React.createElement("span", null, "توصيل للمكتب / للمنزل"),
                     React.createElement("select", {
@@ -532,7 +539,7 @@ function CheckoutModal({ cart, onClose, onSubmit }) {
                 React.createElement("div", { className: "flex items-center justify-between font-display font-bold pt-2" },
                     React.createElement("span", { className: "text-[#C4BDB4]" }, "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A"),
                     React.createElement("span", { className: "text-[#C9A227] text-lg" }, fmt(total))),
-                React.createElement("button", { disabled: !canSubmit, onClick: () => onSubmit(form), className: "w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0637\u0644\u0628")))));
+                React.createElement("button", { disabled: !canSubmit, onClick: () => onSubmit({ ...form, name: form.name.trim(), phone, city }), className: "w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0637\u0644\u0628")))));
 }
 /* ============ تأكيد الطلب ============ */
 function OrderSuccessModal({ order, onClose }) {
@@ -1049,6 +1056,9 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                         o.phone,
                         " \u00B7 ",
                         o.city),
+                    typeof o.notes === "string" && o.notes.trim() && React.createElement("p", {
+                        className: "text-sm text-[#C4BDB4] whitespace-pre-wrap break-words"
+                    }, o.notes),
                     React.createElement("div", { className: "text-sm text-[#A8A29A] space-y-0.5" }, o.items.map((it, i) => React.createElement("p", { key: i },
                         "- ",
                         it.name,
