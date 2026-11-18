@@ -674,6 +674,12 @@ function LandingView({ products, onPick }) {
         { n: "عُمان", l: "توصيل داخل السلطنة" },
     ];
 
+    // صور مربعات "قصتنا" (بالترتيب 01، 02، 03) — غيّر الاسم أو موضع القص من هنا
+    const STORY_IMAGES = [
+        { src: "about-bg.jpg", pos: "center 55%" },
+        { src: "about-bg2.jpg", pos: "center 35%" },
+        { src: "about-bg3.jpg", pos: "center 55%" },
+    ];
     const STORY = [
         {
             t: "بدأنا من شغف",
@@ -747,25 +753,26 @@ function LandingView({ products, onPick }) {
         ),
 
         // ===== 2) القسم الثاني: قصتنا =====
-        React.createElement("section", { className: "relative overflow-hidden", style: { backgroundImage: "url(about-bg.jpg)", backgroundSize: "cover", backgroundPosition: "center 62%" } },
-            React.createElement("div", { className: "absolute inset-0 bg-gradient-to-b from-[#14110F]/80 via-[#14110F]/55 to-[#14110F]/85" }),
-            React.createElement("div", { className: "relative px-5 py-24 md:py-32 max-w-5xl mx-auto" },
+        React.createElement("section", { className: "relative px-5 py-24 md:py-32 max-w-5xl mx-auto" },
             React.createElement("div", { className: "text-center mb-14" },
-                React.createElement("p", { className: "rv font-body text-[#C9A227] text-xs tracking-[0.3em] mb-3" }, "من نحن"),
-                React.createElement("h2", { className: "rv rv-d1 font-display font-black text-[#F5F3F0] text-3xl md:text-5xl leading-tight" }, "قصتنا"),
-                React.createElement("div", { className: "rv rv-d2 mx-auto mt-5 h-px w-20 bg-gradient-to-r from-transparent via-[#5A544C]/80 to-transparent" })
+                React.createElement("p", { className: "rv font-body text-[#9A7B12] text-xs tracking-[0.3em] mb-3" }, "من نحن"),
+                React.createElement("h2", { className: "rv rv-d1 font-display font-black text-[#2A2420] text-3xl md:text-5xl leading-tight" }, "قصتنا"),
+                React.createElement("div", { className: "rv rv-d2 mx-auto mt-5 h-px w-20 bg-gradient-to-r from-transparent via-[#C9A227]/60 to-transparent" })
             ),
             React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-5" },
                 STORY.map((s, i) => React.createElement("div", {
                     key: i,
-                    className: `rv rv-d${i + 1} bg-[#14110F]/55 backdrop-blur-sm ring-1 ring-white/10 rounded-2xl p-7 hover:ring-[#C9A227]/50 transition-all`
+                    className: `rv rv-d${i + 1} relative overflow-hidden rounded-2xl ring-1 ring-[#C9A227]/40 min-h-[360px] md:min-h-[420px] flex flex-col justify-end transition-all hover:ring-[#C9A227]`,
+                    style: { backgroundImage: `url(${STORY_IMAGES[i].src})`, backgroundSize: "cover", backgroundPosition: STORY_IMAGES[i].pos }
                 },
-                    React.createElement("div", { className: "font-display font-black text-5xl text-[#C9A227]/35 leading-none mb-4" }, `0${i + 1}`),
-                    React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] text-lg mb-3" }, s.t),
-                    React.createElement("p", { className: "font-body text-sm text-[#A8A29A] leading-relaxed" }, s.d)
+                    React.createElement("div", { className: "absolute inset-0 bg-gradient-to-t from-[#14110F]/95 via-[#14110F]/62 to-[#14110F]/8" }),
+                    React.createElement("div", { className: "relative p-7" },
+                        React.createElement("div", { className: "font-display font-black text-5xl text-[#C9A227]/75 leading-none mb-4" }, `0${i + 1}`),
+                        React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] text-lg mb-3" }, s.t),
+                        React.createElement("p", { className: "font-body text-sm text-[#E4DED4] leading-relaxed" }, s.d))
                 ))
             )
-        )),
+        ),
 
         // ===== 3) القسم الثالث: اختيار القسم =====
         React.createElement("section", { className: "relative px-5 pb-28 pt-4 md:pt-10" },
