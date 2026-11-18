@@ -234,21 +234,34 @@ function bundledImage(id) {
 }
 
 // ===== قراءة المنتجات من الجداول المُطبّعة (بدون صور: حجم صغير جداً) =====
+let OFFERS_SUPPORTED = false;
 async function loadProductsFromDB() {
-    const query = "products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc";
-    const rows = [];
-    const batchSize = 500;
-    while (true) {
-        const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + rows.length);
-        const batch = await res.json();
-        if (!batch.length) break;
-        rows.push(...batch);
+    const fetchAll = async (query) => {
+        const out = [];
+        const batchSize = 500;
+        while (true) {
+            const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + out.length);
+            const batch = await res.json();
+            if (!batch.length) break;
+            out.push(...batch);
+        }
+        return out;
+    };
+    let rows;
+    try {
+        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        OFFERS_SUPPORTED = true;
+    } catch (e) {
+        OFFERS_SUPPORTED = false;
+        rows = await fetchAll("products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
     }
     return rows.map(r => ({
         id: r.id,
         name: r.name,
         category: r.category,
         price: Number(r.price) || 0,
+        onOffer: !!r.on_offer,
+        oldPrice: Number(r.old_price) || 0,
         image: r.image_url || bundledImage(r.id),
         variants: (r.variants || []).map(v => ({
             size: v.size, color: v.color, stock: Number(v.stock) || 0
@@ -289,6 +302,7 @@ async function upsertProductDB(p) {
         body: JSON.stringify([{
             id: p.id, name: p.name, category: p.category,
             price: Number(p.price) || 0,
+            ...(OFFERS_SUPPORTED ? { on_offer: !!p.onOffer, old_price: p.onOffer ? (Number(p.oldPrice) || null) : null } : {}),
             image_url: isBundled ? null : (p.image || null)
         }])
     });
@@ -350,8 +364,8 @@ async function updateOrderStatusDB(id, status) {
 /* ============ ثوابت العلامة التجارية ============ */
 const STORE_NAME = "LEGENDS_STYLE";
 const STORE_TAGLINE = "أساطير الملعب تلبس هنا";
-const CATEGORIES = ["قمصان الأندية", "قمصان المنتخبات", "ملابس تدريب", "نسخة الجماهير", "نسخة اللاعبين 26", "نسخة اللاعبين 27", "نسخة خاصة", "صيفي", "أكمام طويلة", "كلاسيك", "شورتات", "أطفال", "نسائي", "ملابس رياضية"];
-const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "20", "22", "24", "26", "28", "39", "40", "41", "42", "43"];
+const CATEGORIES = ["قمصان الأندية", "قمصان المنتخبات", "ملابس تدريب", "نسخة الجماهير", "نسخة اللاعبين 26", "نسخة اللاعبين 27", "نسخة خاصة", "صيفي", "أكمام طويلة", "كلاسيك", "شورتات", "أطفال", "نسائي", "ملابس رياضية", "أحذية", "أوفر سايز", "كاجوال", "إكسسوارات"];
+const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "20", "22", "24", "26", "28", "39", "40", "41", "42", "43", "44"];
 const LOW_STOCK = 3;
 const STORE_WHATSAPP = "96877116435";
 const STORE_EMAIL = "Balhbsy504@gmail.com"; // غيّرها لرقم واتساب متجرك الفعلي
@@ -364,7 +378,20 @@ const GENDER_MAP = {
 function genderOf(category) {
     return GENDER_MAP[category] || "رجال";
 }
+// ===== صفحات الصفحة الرئيسية (الأقسام الرئيسية) =====
+const LANDING_PAGES = ["رجال", "نساء", "أطفال", "عروض"];
+// ===== أقسام داخل كل صفحة: عدّلها متى ما تبي (اسم القسم + الأقسام اللي يجمعها) =====
+const SECTIONS = {
+    "رجال": [
+        { name: "نسخة اللاعبين", cats: ["نسخة اللاعبين 26", "نسخة اللاعبين 27"] },
+        { name: "التدريب", cats: ["ملابس تدريب"] },
+        { name: "الأوفر سايز", cats: ["أوفر سايز"] },
+        { name: "كاجوال", cats: ["كاجوال"] },
+        { name: "الأحذية والإكسسوارات", cats: ["أحذية", "إكسسوارات"] },
+    ],
+};
 const GENDER_TAGLINE = {
+    "عروض": "خصومات على قطع مختارة · لفترة محدودة",
     "رجال": "قمصان الأندية والمنتخبات · ملابس الملاعب",
     "نساء": "تشكيلة نسائية رياضية بلمسة أنيقة",
     "أطفال": "نجوم المستقبل يلبسون هنا",
@@ -414,12 +441,13 @@ function ProductCard({ product, onOpen }) {
     return (React.createElement("button", { onClick: () => onOpen(product), className: "group text-right bg-[#2A2724] rounded-2xl overflow-hidden ring-1 ring-[#3A3632] hover:ring-[#5A544C] transition-all" },
         React.createElement("div", { className: `relative h-56 sm:h-64 ${colors.bg} flex items-center justify-center overflow-hidden` },
             product.image ? (React.createElement("img", { src: product.image, alt: product.name, loading: "lazy", decoding: "async", className: "w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105" })) : (React.createElement("span", { className: "font-display font-black text-[#F5F3F0]/10 text-8xl select-none" }, (product.number && product.number !== "—") ? product.number : product.name.slice(0, 2))),
+            product.onOffer && React.createElement("span", { className: "absolute top-3 left-3 text-[11px] font-body font-bold px-2 py-1 rounded-full bg-[#C9A227] text-[#22201E]" }, product.oldPrice > product.price ? "عرض −" + Math.round((1 - product.price / product.oldPrice) * 100) + "%" : "عرض"),
             React.createElement("span", { className: "absolute top-3 right-3 text-[11px] font-body px-2 py-1 rounded-full bg-[#1A1815]/70 text-[#E7E3DE]" }, product.category)),
         React.createElement("div", { className: "p-4 space-y-2" },
             React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] leading-snug" }, product.name),
             React.createElement("div", { className: "flex items-center justify-between" },
                 product.price > 0
-                    ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-lg" }, fmt(product.price))
+                    ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-lg" }, fmt(product.price), product.onOffer && product.oldPrice > product.price && React.createElement("span", { className: "mr-2 text-sm text-[#8A847B] line-through font-body" }, fmt(product.oldPrice)))
                     : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-0.5 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F"),
                 React.createElement(StockBadge, { stock: stock })))));
 }
@@ -452,7 +480,7 @@ function ProductModal({ product, cart, onClose, onAddToCart }) {
                 React.createElement("div", { className: "flex items-center justify-between" },
                     React.createElement("span", { className: "text-[#A8A29A] text-sm" }, product.category),
                     product.price > 0
-                        ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-xl" }, fmt(product.price))
+                        ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-xl" }, fmt(product.price), product.onOffer && product.oldPrice > product.price && React.createElement("span", { className: "mr-2 text-sm text-[#8A847B] line-through font-body" }, fmt(product.oldPrice)))
                         : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-1 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F \u0628\u0639\u062F")),
                 React.createElement("div", null,
                     React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0645\u0642\u0627\u0633"),
@@ -602,10 +630,11 @@ function useReveal() {
 function GenderCards({ products, onPick }) {
     const counts = useMemo(() => {
         const m = {};
-        for (const g of GENDERS) m[g] = 0;
+        for (const g of LANDING_PAGES) m[g] = 0;
         for (const p of products) {
             const g = genderOf(p.category);
             if (m[g] !== undefined) m[g] += 1;
+            if (p.onOffer) m["عروض"] += 1;
         }
         return m;
     }, [products]);
@@ -614,10 +643,11 @@ function GenderCards({ products, onPick }) {
         "رجال": { grad: "from-[#2F3B33] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
         "نساء": { grad: "from-[#3B2F38] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
         "أطفال": { grad: "from-[#3B342A] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
+        "عروض": { grad: "from-[#5A4A1C] to-transparent", ring: "ring-[#C9A227]/60 hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
     };
 
-    return React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mx-auto" },
-        GENDERS.map((g, i) => {
+    return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-4xl mx-auto" },
+        LANDING_PAGES.map((g, i) => {
             const st = CARD[g];
             return React.createElement("button", {
                 key: g,
@@ -760,13 +790,19 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
     const [showCart, setShowCart] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
     const [successOrder, setSuccessOrder] = useState(null);
-    const genderProducts = useMemo(() => products.filter(p => genderOf(p.category) === gender), [products, gender]);
-    const genderCategories = useMemo(() => [...new Set(genderProducts.map(p => p.category))], [genderProducts]);
+    const genderProducts = useMemo(() => gender === "عروض" ? products.filter(p => p.onOffer) : products.filter(p => genderOf(p.category) === gender), [products, gender]);
+    const filters = useMemo(() => {
+        const secs = SECTIONS[gender] || [];
+        const covered = new Set(secs.flatMap(sc => sc.cats));
+        const rest = [...new Set(genderProducts.map(p => p.category))].filter(c => !covered.has(c)).map(c => ({ label: c, cats: [c] }));
+        return [...secs.map(sc => ({ label: sc.name, cats: sc.cats })), ...rest];
+    }, [genderProducts, gender]);
     useEffect(() => { setCategory("الكل"); setSearch(""); }, [gender]);
     const filtered = useMemo(() => {
-        return genderProducts.filter(p => (category === "الكل" || p.category === category) &&
+        const cur = filters.find(f => f.label === category);
+        return genderProducts.filter(p => (category === "الكل" || (cur && cur.cats.includes(p.category))) &&
             p.name.includes(search.trim()));
-    }, [genderProducts, search, category]);
+    }, [genderProducts, search, category, filters]);
     const addToCart = (item) => {
         setCart(prev => {
             const idx = prev.findIndex(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
@@ -850,10 +886,10 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             React.createElement("div", { className: "flex items-center gap-2 bg-[#2A2724] rounded-xl px-3 py-2.5 ring-1 ring-[#3A3632]" },
                 React.createElement(Search, { size: 18, className: "text-[#8A847B]" }),
                 React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C...", className: "bg-transparent outline-none text-[#F5F3F0] placeholder-[#7A746C] flex-1 font-body" })),
-            React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...genderCategories].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
+            React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
             React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pt-2" },
                 filtered.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: setOpenProduct })),
-                filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
+                filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, (category !== "الكل" && !search.trim() && (SECTIONS[gender] || []).some(sc => sc.name === category)) ? "قريبًا — نجهّز منتجات هذا القسم" : "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
         openProduct && React.createElement(ProductModal, { product: openProduct, cart: cart, onClose: () => setOpenProduct(null), onAddToCart: addToCart }),
         showCart && React.createElement(CartModal, { cart: cart, products: products, onClose: () => setShowCart(false), onUpdateQty: updateQty, onRemove: removeItem, onCheckout: () => { setShowCart(false); setShowCheckout(true); } }),
         showCheckout && React.createElement(CheckoutModal, { cart: cart, onClose: () => setShowCheckout(false), onSubmit: submitOrder }),
@@ -866,6 +902,8 @@ function ProductForm({ initial, onSave, onCancel }) {
     const [category, setCategory] = useState((initial === null || initial === void 0 ? void 0 : initial.category) || CATEGORIES[0]);
     const [price, setPrice] = useState((initial === null || initial === void 0 ? void 0 : initial.price) || "");
     const [number, setNumber] = useState((initial === null || initial === void 0 ? void 0 : initial.number) || "");
+    const [onOffer, setOnOffer] = useState(!!(initial && initial.onOffer));
+    const [oldPrice, setOldPrice] = useState((initial && initial.oldPrice) || "");
     const [image, setImage] = useState((initial === null || initial === void 0 ? void 0 : initial.image) || null);
     const [variants, setVariants] = useState(((_a = initial === null || initial === void 0 ? void 0 : initial.variants) === null || _a === void 0 ? void 0 : _a.length) ? initial.variants : [{ size: "M", color: "عادي", stock: 0 }]);
     const updateVariant = (idx, field, value) => {
@@ -903,6 +941,10 @@ function ProductForm({ initial, onSave, onCancel }) {
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                     React.createElement("select", { value: category, onChange: e => setCategory(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none" }, CATEGORIES.map(c => React.createElement("option", { key: c, value: c }, c))),
                     React.createElement("input", { type: "number", placeholder: "\u0627\u0644\u0633\u0639\u0631", value: price, onChange: e => setPrice(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
+                React.createElement("div", { className: "bg-[#332F2B] rounded-lg px-3 py-2.5 space-y-2" },
+                    React.createElement("label", { className: "flex items-center gap-2 text-sm text-[#F5F3F0] cursor-pointer" },
+                        React.createElement("input", { type: "checkbox", checked: onOffer, onChange: e => setOnOffer(e.target.checked) }), "منتج في صفحة العروض"),
+                    onOffer && React.createElement("input", { type: "number", placeholder: "السعر قبل الخصم (اختياري)", value: oldPrice, onChange: e => setOldPrice(e.target.value), className: "w-full bg-[#2A2724] rounded-lg px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
                 React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u0638\u0647\u0631 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A\u060C \u0645\u062B\u0644 \u0631\u0642\u0645 \u0627\u0644\u0642\u0645\u064A\u0635)", value: number, onChange: e => setNumber(e.target.value), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
                 React.createElement("div", { className: "space-y-2" },
                     React.createElement("p", { className: "text-sm text-[#A8A29A]" }, "\u0627\u0644\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0627\u0644\u0623\u0644\u0648\u0627\u0646 \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646"),
@@ -916,7 +958,7 @@ function ProductForm({ initial, onSave, onCancel }) {
                         React.createElement(Plus, { size: 14 }),
                         " \u0625\u0636\u0627\u0641\u0629 \u0645\u0642\u0627\u0633/\u0644\u0648\u0646"))),
             React.createElement("div", { className: "p-4 border-t border-[#3A3632]" },
-                React.createElement("button", { disabled: !canSave, onClick: () => onSave({ id: (initial === null || initial === void 0 ? void 0 : initial.id) || genId("prod"), name, category, price: Number(price) || 0, number: number || "—", image, variants }), className: "w-full py-3 rounded-xl bg-[#F5F3F0] disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062D\u0641\u0638 \u0627\u0644\u0645\u0646\u062A\u062C")))));
+                React.createElement("button", { disabled: !canSave, onClick: () => onSave({ id: (initial === null || initial === void 0 ? void 0 : initial.id) || genId("prod"), name, category, price: Number(price) || 0, onOffer, oldPrice: Number(oldPrice) || 0, number: number || "—", image, variants }), className: "w-full py-3 rounded-xl bg-[#F5F3F0] disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062D\u0641\u0638 \u0627\u0644\u0645\u0646\u062A\u062C")))));
 }
 /* ============ لوحة التحكم ============ */
 function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts, onExit, onError }) {
