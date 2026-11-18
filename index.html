@@ -21,15 +21,15 @@ body{margin:0;background:#22201E;}
 /* ===== خلفية متحركة للصفحة الرئيسية ===== */
 .ls-stage{position:absolute;inset:0;overflow:hidden;pointer-events:none}
 .ls-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55}
-.ls-orb-a{width:46vw;height:46vw;min-width:280px;min-height:280px;background:#3C4A3C;top:-12%;right:-8%;animation:ls-float-a 18s ease-in-out infinite}
-.ls-orb-b{width:38vw;height:38vw;min-width:240px;min-height:240px;background:#4A3F30;bottom:-14%;left:-10%;animation:ls-float-b 22s ease-in-out infinite}
-.ls-orb-c{width:30vw;height:30vw;min-width:200px;min-height:200px;background:#463F30;top:38%;left:42%;opacity:.45;animation:ls-float-c 26s ease-in-out infinite}
+.ls-orb-a{width:46vw;height:46vw;min-width:280px;min-height:280px;background:#E6D5A8;top:-12%;right:-8%;animation:ls-float-a 18s ease-in-out infinite}
+.ls-orb-b{width:38vw;height:38vw;min-width:240px;min-height:240px;background:#E4D6BE;bottom:-14%;left:-10%;animation:ls-float-b 22s ease-in-out infinite}
+.ls-orb-c{width:30vw;height:30vw;min-width:200px;min-height:200px;background:#EBDDC4;top:38%;left:42%;opacity:.45;animation:ls-float-c 26s ease-in-out infinite}
 @keyframes ls-float-a{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-6%,7%) scale(1.12)}}
 @keyframes ls-float-b{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8%,-6%) scale(1.15)}}
 @keyframes ls-float-c{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-9%,-8%) scale(.88)}}
 
 .ls-grid{position:absolute;inset:0;
-  background-image:linear-gradient(rgba(245,243,240,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(245,243,240,.05) 1px,transparent 1px);
+  background-image:linear-gradient(rgba(34,32,30,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,32,30,.06) 1px,transparent 1px);
   background-size:56px 56px;
   mask-image:radial-gradient(ellipse 75% 55% at 50% 45%,#000 30%,transparent 100%);
   -webkit-mask-image:radial-gradient(ellipse 75% 55% at 50% 45%,#000 30%,transparent 100%);
@@ -37,7 +37,7 @@ body{margin:0;background:#22201E;}
 @keyframes ls-drift{from{background-position:0 0,0 0}to{background-position:56px 56px,56px 56px}}
 
 .ls-sweep{position:absolute;top:0;bottom:0;width:38%;
-  background:linear-gradient(100deg,transparent,rgba(255,255,255,.06),transparent);
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);
   animation:ls-sweep 9s ease-in-out infinite}
 @keyframes ls-sweep{0%{transform:translateX(-140%)}55%,100%{transform:translateX(360%)}}
 
@@ -55,7 +55,7 @@ body{margin:0;background:#22201E;}
   border:0;pointer-events:none;
   opacity:0;animation:ls-video-in 1.6s ease-out .3s forwards;
 }
-@keyframes ls-video-in{to{opacity:1}}
+@keyframes ls-video-in{to{opacity:.4}}
 
 /* درع شفاف يمنع ظهور أزرار تحكم المتصفح فوق الفيديو */
 .ls-video-shield{
@@ -77,8 +77,8 @@ body{margin:0;background:#22201E;}
 .ls-video-veil{
   position:absolute;inset:0;z-index:4;pointer-events:none;
   background:
-    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(34,32,30,.35), rgba(34,32,30,.72) 100%),
-    linear-gradient(to bottom, rgba(34,32,30,.55), rgba(34,32,30,.35) 35%, rgba(34,32,30,.92));
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(245,241,234,.55), rgba(245,241,234,.82) 100%),
+    linear-gradient(to bottom, rgba(245,241,234,.7), rgba(245,241,234,.4) 35%, rgba(245,241,234,.96));
 }
 
 /* على الشاشات الصغيرة جداً نخفي الفيديو ونكتفي بالخلفية المتحركة */
@@ -92,7 +92,7 @@ body{margin:0;background:#22201E;}
 .rv-d3{transition-delay:.3s}.rv-d4{transition-delay:.4s}
 
 /* ===== مؤشر النزول ===== */
-.ls-mouse{width:24px;height:38px;border:2px solid rgba(245,243,240,.28);border-radius:14px;display:flex;justify-content:center;padding-top:6px}
+.ls-mouse{width:24px;height:38px;border:2px solid rgba(34,32,30,.35);border-radius:14px;display:flex;justify-content:center;padding-top:6px}
 .ls-wheel{width:3px;height:7px;background:#C9A227;border-radius:2px;animation:ls-wheel 1.7s ease-in-out infinite}
 @keyframes ls-wheel{0%{opacity:0;transform:translateY(0)}30%{opacity:1}70%{opacity:1;transform:translateY(11px)}100%{opacity:0;transform:translateY(13px)}}
 
@@ -640,10 +640,10 @@ function GenderCards({ products, onPick }) {
     }, [products]);
 
     const CARD = {
-        "رجال": { grad: "from-[#2F3B33] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
-        "نساء": { grad: "from-[#3B2F38] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
-        "أطفال": { grad: "from-[#3B342A] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
-        "عروض": { grad: "from-[#5A4A1C] to-transparent", ring: "ring-[#C9A227]/60 hover:ring-[#C9A227]", accent: "text-[#C9A227]" },
+        "رجال": { grad: "from-[#DCE6D8] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "نساء": { grad: "from-[#EBDCE5] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "أطفال": { grad: "from-[#EEE2CC] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "عروض": { grad: "from-[#EBD79A] to-transparent", ring: "ring-[#C9A227]/60 hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
     };
 
     return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-4xl mx-auto" },
@@ -652,13 +652,13 @@ function GenderCards({ products, onPick }) {
             return React.createElement("button", {
                 key: g,
                 onClick: () => onPick(g),
-                className: `rv rv-d${i + 1} group relative overflow-hidden rounded-2xl ring-1 ring-[#3A3632] ${st.ring} bg-[#2A2724]/80 backdrop-blur-sm px-6 py-10 transition-all duration-300 hover:-translate-y-1`
+                className: `rv rv-d${i + 1} group relative overflow-hidden rounded-2xl ring-1 ring-[#E2D8C4] ${st.ring} bg-white/70 backdrop-blur-sm shadow-sm px-6 py-10 transition-all duration-300 hover:-translate-y-1`
             },
                 React.createElement("div", { className: `absolute inset-0 bg-gradient-to-br ${st.grad} opacity-60 group-hover:opacity-100 transition-opacity` }),
                 React.createElement("div", { className: "relative" },
-                    React.createElement("span", { className: "block font-display font-black text-3xl md:text-4xl text-[#F5F3F0]" }, g),
+                    React.createElement("span", { className: "block font-display font-black text-3xl md:text-4xl text-[#2A2420]" }, g),
                     React.createElement("span", { className: `block font-body text-xs mt-2 ${st.accent}` }, `${counts[g] || 0} منتج`),
-                    React.createElement("span", { className: "block font-body text-[11px] mt-4 text-[#8A847B] group-hover:text-[#C4BDB4] transition-colors" }, "تصفّح الآن ←")
+                    React.createElement("span", { className: "block font-body text-[11px] mt-4 text-[#7A7368] group-hover:text-[#2A2420] transition-colors" }, "تصفّح الآن ←")
                 )
             );
         })
@@ -689,7 +689,7 @@ function LandingView({ products, onPick }) {
         },
     ];
 
-    return React.createElement("div", { className: "relative bg-[#22201E]" },
+    return React.createElement("div", { className: "relative bg-[#F5F1EA]" },
 
         // ===== 1) القسم الأول: الواجهة المتحركة =====
         React.createElement("section", { className: "relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-5 text-center" },
@@ -727,27 +727,29 @@ function LandingView({ products, onPick }) {
             React.createElement("div", { className: "ls-video-shield" }),
             React.createElement("div", { className: "ls-video-veil" }),
             React.createElement("div", { className: "relative z-10 ls-rise" },
-                React.createElement("h1", { className: "font-display font-black text-[#F5F3F0] text-5xl md:text-7xl tracking-tight" },
+                React.createElement("h1", { className: "font-display font-black text-[#2A2420] text-5xl md:text-7xl tracking-tight" },
                     "LEGENDS",
                     React.createElement("span", { className: "text-[#C9A227]" }, "_"),
                     "STYLE"),
-                React.createElement("p", { className: "font-body text-[#A8A29A] mt-3 text-base md:text-lg" }, STORE_TAGLINE),
+                React.createElement("p", { className: "font-body text-[#6B6358] mt-3 text-base md:text-lg" }, STORE_TAGLINE),
                 React.createElement("div", { className: "mx-auto mt-5 h-px w-28 bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent" })
             ),
             React.createElement("div", { className: "relative z-10 grid grid-cols-3 gap-5 md:gap-10 mt-12 ls-rise ls-d2" },
                 STATS.map((s, i) => React.createElement("div", { key: i, className: "text-center" },
-                    React.createElement("div", { className: "font-display font-black text-xl md:text-3xl text-[#F5F3F0]" }, s.n),
-                    React.createElement("div", { className: "font-body text-[11px] md:text-xs text-[#8A847B] mt-1" }, s.l)
+                    React.createElement("div", { className: "font-display font-black text-xl md:text-3xl text-[#2A2420]" }, s.n),
+                    React.createElement("div", { className: "font-body text-[11px] md:text-xs text-[#7A7368] mt-1" }, s.l)
                 ))
             ),
             React.createElement("div", { className: "absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-2 ls-rise ls-d5" },
-                React.createElement("span", { className: "font-body text-[11px] text-[#8A847B] tracking-widest" }, "انزل للأسفل"),
+                React.createElement("span", { className: "font-body text-[11px] text-[#7A7368] tracking-widest" }, "انزل للأسفل"),
                 React.createElement("div", { className: "ls-mouse" }, React.createElement("div", { className: "ls-wheel" }))
             )
         ),
 
         // ===== 2) القسم الثاني: قصتنا =====
-        React.createElement("section", { className: "relative px-5 py-24 md:py-32 max-w-5xl mx-auto" },
+        React.createElement("section", { className: "relative overflow-hidden", style: { backgroundImage: "url(about-bg.jpg)", backgroundSize: "cover", backgroundPosition: "center 62%" } },
+            React.createElement("div", { className: "absolute inset-0 bg-gradient-to-b from-[#14110F]/80 via-[#14110F]/55 to-[#14110F]/85" }),
+            React.createElement("div", { className: "relative px-5 py-24 md:py-32 max-w-5xl mx-auto" },
             React.createElement("div", { className: "text-center mb-14" },
                 React.createElement("p", { className: "rv font-body text-[#C9A227] text-xs tracking-[0.3em] mb-3" }, "من نحن"),
                 React.createElement("h2", { className: "rv rv-d1 font-display font-black text-[#F5F3F0] text-3xl md:text-5xl leading-tight" }, "قصتنا"),
@@ -756,27 +758,27 @@ function LandingView({ products, onPick }) {
             React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-5" },
                 STORY.map((s, i) => React.createElement("div", {
                     key: i,
-                    className: `rv rv-d${i + 1} bg-[#2A2724]/80 ring-1 ring-[#3A3632] rounded-2xl p-7 hover:ring-[#5A544C] transition-all`
+                    className: `rv rv-d${i + 1} bg-[#14110F]/55 backdrop-blur-sm ring-1 ring-white/10 rounded-2xl p-7 hover:ring-[#C9A227]/50 transition-all`
                 },
-                    React.createElement("div", { className: "font-display font-black text-5xl text-[#3A3632] leading-none mb-4" }, `0${i + 1}`),
+                    React.createElement("div", { className: "font-display font-black text-5xl text-[#C9A227]/35 leading-none mb-4" }, `0${i + 1}`),
                     React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] text-lg mb-3" }, s.t),
                     React.createElement("p", { className: "font-body text-sm text-[#A8A29A] leading-relaxed" }, s.d)
                 ))
             )
-        ),
+        )),
 
         // ===== 3) القسم الثالث: اختيار القسم =====
         React.createElement("section", { className: "relative px-5 pb-28 pt-4 md:pt-10" },
             React.createElement("div", { className: "ls-glow" }),
             React.createElement("div", { className: "relative max-w-5xl mx-auto text-center" },
-                React.createElement("h2", { className: "rv font-display font-black text-[#F5F3F0] text-3xl md:text-5xl" }, "وش تدوّر عليه؟"),
-                React.createElement("p", { className: "rv rv-d1 font-body text-[#8A847B] text-sm mt-3 mb-12" }, "اختر القسم وابدأ التصفّح"),
+                React.createElement("h2", { className: "rv font-display font-black text-[#2A2420] text-3xl md:text-5xl" }, "وش تدوّر عليه؟"),
+                React.createElement("p", { className: "rv rv-d1 font-body text-[#7A7368] text-sm mt-3 mb-12" }, "اختر القسم وابدأ التصفّح"),
                 React.createElement(GenderCards, { products: products, onPick: onPick }),
-                React.createElement("div", { className: "rv rv-d4 font-body text-xs text-[#6E6860] mt-16 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
-                    React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#F5F3F0]" },
+                React.createElement("div", { className: "rv rv-d4 font-body text-xs text-[#6B6358] mt-16 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
+                    React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#2A2420]" },
                         "واتساب: ",
                         React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
-                    React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#F5F3F0]" }, STORE_EMAIL)
+                    React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#2A2420]" }, STORE_EMAIL)
                 )
             )
         )
