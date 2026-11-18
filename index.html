@@ -795,7 +795,7 @@ function LandingView({ products, onPick }) {
 
 function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refreshProducts, gender, onBack }) {
     const [search, setSearch] = useState("");
-    const [category, setCategory] = useState("الكل");
+    const [category, setCategory] = useState(gender === "رجال" ? null : "الكل");
     const [openProduct, setOpenProduct] = useState(null);
     const [showCart, setShowCart] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
@@ -807,7 +807,13 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         const rest = [...new Set(genderProducts.map(p => p.category))].filter(c => !covered.has(c)).map(c => ({ label: c, cats: [c] }));
         return [...secs.map(sc => ({ label: sc.name, cats: sc.cats })), ...rest];
     }, [genderProducts, gender]);
-    useEffect(() => { setCategory("الكل"); setSearch(""); }, [gender]);
+    useEffect(() => { setCategory(gender === "رجال" ? null : "الكل"); setSearch(""); }, [gender]);
+    const showMenSections = gender === "رجال" && category === null;
+    const chooseMenSection = (section) => {
+        setCategory(section);
+        setSearch("");
+        window.scrollTo(0, 0);
+    };
     const filtered = useMemo(() => {
         const cur = filters.find(f => f.label === category);
         return genderProducts.filter(p => (category === "الكل" || (cur && cur.cats.includes(p.category))) &&
@@ -873,8 +879,8 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         React.createElement("header", { className: "sticky top-0 z-30 bg-[#22201E]/90 backdrop-blur border-b border-[#3A3632]" },
             React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-3 flex items-center justify-between" },
                 React.createElement("div", { className: "flex items-center gap-3" },
-                    React.createElement("button", { onClick: onBack, className: "flex items-center gap-1 text-xs font-body text-[#A8A29A] hover:text-[#F5F3F0] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-lg px-2.5 py-1.5" },
-                        React.createElement(ChevronLeft, { size: 14 }), gender),
+                    React.createElement("button", { onClick: gender === "رجال" && !showMenSections ? () => chooseMenSection(null) : onBack, className: "flex items-center gap-1 text-xs font-body text-[#A8A29A] hover:text-[#F5F3F0] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-lg px-2.5 py-1.5" },
+                        React.createElement(ChevronLeft, { size: 14 }), showMenSections ? "الرئيسية" : gender),
                     React.createElement("span", { className: "font-display font-black text-[#F5F3F0] text-xl tracking-tight" },
                         "LEGENDS",
                         React.createElement("span", { className: "text-[#C9A227]" }, "_"),
@@ -886,17 +892,26 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             React.createElement("div", { className: "absolute inset-0 bg-gradient-to-l from-[#2C332C] via-[#22201E] to-[#22201E]" }),
             React.createElement("div", { className: "relative max-w-5xl mx-auto px-4 py-14 text-center" },
                 React.createElement("p", { className: "font-body text-[#C9A227] text-sm tracking-widest mb-2" }, GENDER_TAGLINE[gender] || ""),
-                React.createElement("h1", { className: "font-display font-black text-4xl md:text-6xl text-[#F5F3F0] leading-tight" }, STORE_TAGLINE),
+                React.createElement("h1", { className: "font-display font-black text-4xl md:text-6xl text-[#F5F3F0] leading-tight" }, gender === "رجال" ? (category || gender) : STORE_TAGLINE),
                 React.createElement("div", { className: "font-body text-sm text-[#A8A29A] mt-4 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
                     React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#F5F3F0]" }, "\u0648\u0627\u062A\u0633\u0627\u0628: ", React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
                     React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#F5F3F0]" }, STORE_EMAIL)
                 ),
                 React.createElement("p", { className: "font-body text-[#A8A29A] mt-3" }, "\u0643\u0644 \u0642\u0637\u0639\u0629 \u0628\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0623\u0644\u0648\u0627\u0646 \u0645\u062A\u0639\u062F\u062F\u0629\u060C \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646 \u0645\u062D\u062F\u062B \u0644\u062D\u0638\u0629 \u0628\u0644\u062D\u0638\u0629"))),
-        React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4" },
+        showMenSections
+            ? React.createElement("div", { className: "max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4 py-6" },
+                ["الكل", ...SECTIONS["رجال"].map(section => section.name)].map(name =>
+                    React.createElement("button", {
+                        key: name,
+                        type: "button",
+                        onClick: () => chooseMenSection(name),
+                        className: "aspect-square rounded-2xl bg-[#2A2724] ring-1 ring-[#3A3632] hover:ring-[#C9A227] focus-visible:ring-[#C9A227] px-3 text-center font-display font-bold text-lg sm:text-xl text-[#F5F3F0]"
+                    }, name)))
+            : React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4" },
             React.createElement("div", { className: "flex items-center gap-2 bg-[#2A2724] rounded-xl px-3 py-2.5 ring-1 ring-[#3A3632]" },
                 React.createElement(Search, { size: 18, className: "text-[#8A847B]" }),
                 React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C...", className: "bg-transparent outline-none text-[#F5F3F0] placeholder-[#7A746C] flex-1 font-body" })),
-            React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
+            gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
             React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pt-2" },
                 filtered.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: setOpenProduct })),
                 filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, (category !== "الكل" && !search.trim() && (SECTIONS[gender] || []).some(sc => sc.name === category)) ? "قريبًا — نجهّز منتجات هذا القسم" : "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
