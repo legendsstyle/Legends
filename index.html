@@ -238,7 +238,7 @@ let OFFERS_SUPPORTED = false;
 async function loadProductsFromDB() {
     const fetchAll = async (query) => {
         const out = [];
-        let batchSize = 24;
+        let batchSize = 250;
         while (true) {
             let batch;
             try {
@@ -258,12 +258,12 @@ async function loadProductsFromDB() {
     };
     let rows;
     try {
-        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,variants(size,color,stock)&order=sort_order.asc,id.asc");
         OFFERS_SUPPORTED = true;
     } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         if (!/42703|PGRST204/.test(message) || !/old_price|on_offer/.test(message)) throw e;
-        rows = await fetchAll("products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        rows = await fetchAll("products_norm?select=id,name,category,price,variants(size,color,stock)&order=sort_order.asc,id.asc");
         OFFERS_SUPPORTED = false;
     }
     return rows.map(r => ({
@@ -273,11 +273,56 @@ async function loadProductsFromDB() {
         price: Number(r.price) || 0,
         onOffer: !!r.on_offer,
         oldPrice: Number(r.old_price) || 0,
-        image: (r.image_url ?? bundledImage(r.id)) || null,
         variants: (r.variants || []).map(v => ({
             size: v.size, color: v.color, stock: Number(v.stock) || 0
         }))
     }));
+}
+
+// تحميل الصورة عند ظهور بطاقة المنتج، بدون تأخير الكتالوج.
+const productImages = new Map();
+function loadProductImage(id) {
+    if (!productImages.has(id)) {
+        const request = sbRequest("products_norm?select=image_url&id=eq." + encodeURIComponent(id), { cache: "no-store" })
+            .then(response => response.json())
+            .then(rows => (rows[0]?.image_url ?? bundledImage(id)) || null)
+            .catch(error => {
+                if (productImages.get(id) === request) productImages.delete(id);
+                throw error;
+            });
+        productImages.set(id, request);
+    }
+    return productImages.get(id);
+}
+
+function CatalogImage({ product, className, placeholder = null, eager = false }) {
+    const container = useRef(null);
+    const [loaded, setLoaded] = useState(null);
+    const { id, name, image } = product;
+    useEffect(() => {
+        if (image !== undefined) return;
+        let active = true;
+        const load = () => {
+            loadProductImage(id).then(value => {
+                if (active) setLoaded({ id, value });
+            }).catch(() => {});
+        };
+        let observer;
+        if (!eager && typeof IntersectionObserver === "function") {
+            observer = new IntersectionObserver(entries => {
+                if (!entries.some(entry => entry.isIntersecting)) return;
+                observer.disconnect();
+                load();
+            }, { rootMargin: "160px" });
+            if (container.current) observer.observe(container.current);
+        } else {
+            load();
+        }
+        return () => { active = false; observer?.disconnect(); };
+    }, [id, image, eager]);
+    const src = image === undefined ? (loaded?.id === id ? loaded.value : null) : image;
+    return React.createElement("div", { ref: container, className: src || placeholder || !eager ? className : "h-px w-full" },
+        src ? React.createElement("img", { src, alt: name, decoding: "async", className: "w-full h-full", style: { objectFit: "inherit" } }) : placeholder);
 }
 
 // ===== خصم المخزون ذرياً عند الطلب =====
@@ -552,7 +597,8 @@ function ProductCard({ product, onOpen }) {
     const stock = totalStock(product);
     return (React.createElement("button", { onClick: () => onOpen(product), className: "group text-right bg-[#2A2724] rounded-2xl overflow-hidden ring-1 ring-[#3A3632] hover:ring-[#5A544C] transition-all" },
         React.createElement("div", { className: `relative h-56 sm:h-64 ${colors.bg} flex items-center justify-center overflow-hidden` },
-            product.image ? (React.createElement("img", { src: product.image, alt: product.name, loading: "lazy", decoding: "async", className: "w-full h-full object-contain p-2 transition-transform duration-500 group-hover:scale-105" })) : (React.createElement("span", { className: "font-display font-black text-[#F5F3F0]/10 text-8xl select-none" }, (product.number && product.number !== "—") ? product.number : product.name.slice(0, 2))),
+            React.createElement(CatalogImage, { product, className: "w-full h-full object-contain p-2 flex items-center justify-center transition-transform duration-500 group-hover:scale-105",
+                placeholder: React.createElement("span", { className: "font-display font-black text-[#F5F3F0]/10 text-8xl select-none" }, product.name.slice(0, 2)) }),
             product.onOffer && React.createElement("span", { className: "absolute top-3 left-3 text-[11px] font-body font-bold px-2 py-1 rounded-full bg-[#C9A227] text-[#22201E]" }, product.oldPrice > product.price ? "عرض −" + Math.round((1 - product.price / product.oldPrice) * 100) + "%" : "عرض"),
             React.createElement("span", { className: "absolute top-3 right-3 text-[11px] font-body px-2 py-1 rounded-full bg-[#1A1815]/70 text-[#E7E3DE]" }, product.category)),
         React.createElement("div", { className: "p-4 space-y-2" },
@@ -588,7 +634,7 @@ function ProductModal({ product, cart, onClose, onAddToCart }) {
                 React.createElement("button", { onClick: onClose, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
                     React.createElement(X, { size: 20 }))),
             React.createElement("div", { className: "p-4 space-y-4" },
-                product.image && (React.createElement("img", { src: product.image, alt: product.name, className: "w-full h-[22rem] sm:h-[26rem] object-contain rounded-xl bg-[#332F2B] p-3" })),
+                React.createElement(CatalogImage, { key: product.id, product, eager: true, className: "w-full h-[22rem] sm:h-[26rem] object-contain rounded-xl bg-[#332F2B] p-3" }),
                 React.createElement("div", { className: "flex items-center justify-between" },
                     React.createElement("span", { className: "text-[#A8A29A] text-sm" }, product.category),
                     product.price > 0
@@ -1175,8 +1221,23 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
         .map(v => ({ product: p.name, size: v.size, color: v.color, stock: v.stock })));
     const noPriceCount = products.filter(p => !(p.price > 0)).length;
     const revenue = orders.filter(o => o.status !== "ملغي").reduce((s, o) => s + o.total, 0);
+    const [openingProduct, setOpeningProduct] = useState(false);
+    const openProductEditor = async (product) => {
+        if (openingProduct) return;
+        setOpeningProduct(true);
+        try {
+            const image = product.image === undefined ? await loadProductImage(product.id) : product.image;
+            setEditing({ ...product, image });
+            setShowForm(true);
+        } catch (e) {
+            onError?.("تعذّر تحميل صورة المنتج. جرّب فتح التعديل مرة ثانية.");
+        } finally {
+            setOpeningProduct(false);
+        }
+    };
     const autoSaveProduct = React.useCallback(async (product, previous) => {
         await updateProductDB(product, previous);
+        productImages.set(product.id, Promise.resolve(product.image));
         saveProducts(current => current.map(p => p.id === product.id ? product : p));
     }, [saveProducts]);
     const saveProduct = async (product) => {
@@ -1281,9 +1342,7 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                 React.createElement("div", { className: "space-y-2" },
                     filteredAdminProducts.map(p => (React.createElement("div", { key: p.id, className: "bg-[#2A2724] rounded-xl p-3 ring-1 ring-[#3A3632] flex items-center justify-between gap-3" },
                         React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
-                            p.image
-                                ? React.createElement("img", { src: p.image, alt: p.name, loading: "lazy", className: "w-12 h-12 rounded-lg object-cover flex-shrink-0" })
-                                : React.createElement("div", { className: "w-12 h-12 rounded-lg bg-[#332F2B] flex-shrink-0" }),
+                            React.createElement(CatalogImage, { product: p, className: "w-12 h-12 rounded-lg overflow-hidden bg-[#332F2B] object-cover flex-shrink-0" }),
                             React.createElement("div", { className: "min-w-0" },
                                 React.createElement("p", { className: "font-bold text-[#F5F3F0] truncate" }, p.name),
                                 React.createElement("p", { className: "text-xs text-[#8A847B]" },
@@ -1293,7 +1352,7 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                                     " \u00B7 \u0645\u062E\u0632\u0648\u0646: ",
                                     totalStock(p)))),
                         React.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" },
-                            React.createElement("button", { onClick: () => { setEditing(p); setShowForm(true); }, className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#C4BDB4] flex items-center justify-center" },
+                            React.createElement("button", { disabled: openingProduct, onClick: () => openProductEditor(p), className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#C4BDB4] flex items-center justify-center" },
                                 React.createElement(PencilLine, { size: 14 })),
                             React.createElement("button", { onClick: () => deleteProduct(p.id), className: "w-8 h-8 rounded-lg bg-[#3A1D1D] text-[#F0A0A0] flex items-center justify-center" },
                                 React.createElement(Trash2, { size: 14 }))))))))),
@@ -1388,13 +1447,9 @@ function App() {
         }
         catch (e) { }
     };
-    if (loading) {
-        return (React.createElement("div", { className: "min-h-screen bg-[#22201E] flex items-center justify-center" },
-            React.createElement(GlobalStyle, null),
-            React.createElement(Loader2, { className: "animate-spin text-[#C4BDB4]", size: 32 })));
-    }
     return (React.createElement("div", { dir: "rtl" },
         React.createElement(GlobalStyle, null),
+        loading && React.createElement("div", { role: "status", className: "relative z-40 bg-[#2A2724] p-2 text-center text-sm text-[#F5F3F0]" }, "جاري تحميل المنتجات…"),
         productLoadError && React.createElement("div", { role: "alert", className: "relative z-40 flex flex-wrap items-center justify-center gap-3 bg-[#4A3521] p-3 text-sm text-[#F5F3F0]" },
             "تعذّر تحميل أحدث بيانات المنتجات.",
             React.createElement("button", { type: "button", onClick: refreshProducts, className: "rounded-lg bg-[#F5F3F0] px-3 py-1.5 font-bold text-[#22201E]" }, "إعادة المحاولة")),
