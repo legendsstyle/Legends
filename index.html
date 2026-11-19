@@ -135,7 +135,7 @@ body{margin:0;background:#22201E;}
 </script>
 <script>
 "use strict";
-const { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useMemo, useRef } = React;
 /* ============ أيقونات بسيطة بديلة لمكتبة lucide-react (بدون اعتماديات خارجية) ============ */
 function mkIcon(symbol) {
     return function Icon({ size = 16, className = "" }) {
@@ -233,15 +233,24 @@ function bundledImage(id) {
     return _imgMap[id] || null;
 }
 
-// ===== قراءة المنتجات من الجداول المُطبّعة (بدون صور: حجم صغير جداً) =====
+// ===== قراءة المنتجات والصور من Supabase على دفعات =====
 let OFFERS_SUPPORTED = false;
 async function loadProductsFromDB() {
     const fetchAll = async (query) => {
         const out = [];
-        const batchSize = 500;
+        let batchSize = 24;
         while (true) {
-            const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + out.length);
-            const batch = await res.json();
+            let batch;
+            try {
+                const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + out.length, { cache: "no-store" });
+                batch = await res.json();
+            } catch (e) {
+                const message = e instanceof Error ? e.message : String(e);
+                const canReduce = /مهلة|timeout|timed out|Failed to fetch|Load failed|NetworkError|network connection|^Supabase (413|500|502|503|504)\b/i.test(message);
+                if (!canReduce || batchSize === 1) throw e;
+                batchSize = Math.max(1, Math.floor(batchSize / 2));
+                continue;
+            }
             if (!batch.length) break;
             out.push(...batch);
         }
@@ -252,8 +261,10 @@ async function loadProductsFromDB() {
         rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
         OFFERS_SUPPORTED = true;
     } catch (e) {
-        OFFERS_SUPPORTED = false;
+        const message = e instanceof Error ? e.message : String(e);
+        if (!/42703|PGRST204/.test(message) || !/old_price|on_offer/.test(message)) throw e;
         rows = await fetchAll("products_norm?select=id,name,category,price,image_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        OFFERS_SUPPORTED = false;
     }
     return rows.map(r => ({
         id: r.id,
@@ -262,7 +273,7 @@ async function loadProductsFromDB() {
         price: Number(r.price) || 0,
         onOffer: !!r.on_offer,
         oldPrice: Number(r.old_price) || 0,
-        image: r.image_url || bundledImage(r.id),
+        image: (r.image_url ?? bundledImage(r.id)) || null,
         variants: (r.variants || []).map(v => ({
             size: v.size, color: v.color, stock: Number(v.stock) || 0
         }))
@@ -316,6 +327,48 @@ async function upsertProductDB(p) {
             headers: { Prefer: "return=minimal" },
             body: JSON.stringify(vs)
         });
+    }
+}
+
+async function updateProductDB(product, previous) {
+    const changes = {};
+    for (const field of ["name", "category", "price"]) {
+        if (product[field] !== previous[field]) changes[field] = product[field];
+    }
+    if (product.image !== previous.image) changes.image_url = product.image ?? "";
+    if (OFFERS_SUPPORTED) {
+        if (product.onOffer !== previous.onOffer) changes.on_offer = product.onOffer;
+        const oldPrice = product.onOffer ? product.oldPrice || null : null;
+        const previousPrice = previous.onOffer ? previous.oldPrice || null : null;
+        if (oldPrice !== previousPrice) changes.old_price = oldPrice;
+    }
+    const productFilter = "id=eq." + encodeURIComponent(product.id);
+    if (Object.keys(changes).length) {
+        const response = await sbRequest("products_norm?" + productFilter + "&select=id", {
+            method: "PATCH",
+            headers: { Prefer: "return=representation" },
+            body: JSON.stringify(changes)
+        });
+        if (!(await response.json()).length) throw new Error("قاعدة البيانات ما أكدت حفظ المنتج");
+    }
+
+    const keyOf = variant => JSON.stringify([variant.size, variant.color]);
+    const before = new Map((previous.variants || []).map(v => [keyOf(v), v]));
+    const after = new Set(product.variants.map(keyOf));
+    const updates = product.variants.filter(v => before.get(keyOf(v))?.stock !== v.stock);
+    if (updates.length) {
+        await sbRequest("variants?on_conflict=product_id,size,color", {
+            method: "POST",
+            headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+            body: JSON.stringify(updates.map(v => ({ product_id: product.id, size: v.size, color: v.color, stock: v.stock })))
+        });
+    }
+    for (const [key, variant] of before) {
+        if (after.has(key)) continue;
+        const query = "variants?product_id=eq." + encodeURIComponent(product.id)
+            + "&size=eq." + encodeURIComponent(variant.size)
+            + "&color=eq." + encodeURIComponent(variant.color);
+        await sbRequest(query, { method: "DELETE" });
     }
 }
 
@@ -979,36 +1032,83 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         successOrder && React.createElement(OrderSuccessModal, { order: successOrder, onClose: () => setSuccessOrder(null) })));
 }
 /* ============ نموذج إضافة/تعديل منتج (أدمن) ============ */
-function ProductForm({ initial, onSave, onCancel }) {
-    var _a;
+function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
     const [name, setName] = useState((initial === null || initial === void 0 ? void 0 : initial.name) || "");
     const [category, setCategory] = useState((initial === null || initial === void 0 ? void 0 : initial.category) || CATEGORIES[0]);
     const [price, setPrice] = useState((initial === null || initial === void 0 ? void 0 : initial.price) || "");
-    const [number, setNumber] = useState((initial === null || initial === void 0 ? void 0 : initial.number) || "");
     const [onOffer, setOnOffer] = useState(!!(initial && initial.onOffer));
     const [oldPrice, setOldPrice] = useState((initial && initial.oldPrice) || "");
     const [image, setImage] = useState((initial === null || initial === void 0 ? void 0 : initial.image) || null);
-    const [variants, setVariants] = useState(((_a = initial === null || initial === void 0 ? void 0 : initial.variants) === null || _a === void 0 ? void 0 : _a.length) ? initial.variants : [{ size: "M", color: "عادي", stock: 0 }]);
+    const [variants, setVariants] = useState(initial?.variants || [{ size: "M", color: "عادي", stock: 0 }]);
     const updateVariant = (idx, field, value) => {
         setVariants(vs => vs.map((v, i) => i === idx ? { ...v, [field]: field === "stock" ? Number(value) : value } : v));
     };
     const addVariantRow = () => setVariants(vs => [...vs, { size: "M", color: "عادي", stock: 0 }]);
     const removeVariantRow = (idx) => setVariants(vs => vs.filter((_, i) => i !== idx));
+    const [draftId] = useState(() => initial?.id || genId("prod"));
+    const [saved, setSaved] = useState(initial);
+    const [saving, setSaving] = useState(false);
+    const [autoError, setAutoError] = useState("");
+    const [imagePending, setImagePending] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    const imageRequest = useRef(0);
     const handleImageUpload = (e) => {
         var _a;
         const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
         if (!file)
             return;
+        const request = ++imageRequest.current;
+        setImagePending(true);
+        setImageError(false);
         const reader = new FileReader();
-        reader.onload = () => setImage(reader.result);
+        reader.onload = () => {
+            if (request !== imageRequest.current) return;
+            setImage(reader.result);
+            setImagePending(false);
+        };
+        reader.onerror = () => {
+            if (request !== imageRequest.current) return;
+            setImagePending(false);
+            setImageError(true);
+        };
         reader.readAsDataURL(file);
     };
-    const canSave = name.trim() && variants.length > 0 && variants.every(v => v.color.trim());
-    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onCancel },
+    const draft = useMemo(() => ({
+        id: draftId, name: name.trim(), category, price: Number(price) || 0,
+        onOffer, oldPrice: Number(oldPrice) || 0, image, variants
+    }), [draftId, name, category, price, onOffer, oldPrice, image, variants]);
+    const keys = variants.map(v => JSON.stringify([v.size, v.color]));
+    const canSave = draft.name && variants.every(v => v.color.trim()) && new Set(keys).size === keys.length;
+    const dirty = !!initial && (["name", "category", "price", "onOffer", "oldPrice", "image"]
+        .some(field => draft[field] !== saved[field]) || JSON.stringify(variants) !== JSON.stringify(saved.variants));
+    const pending = dirty || saving || imagePending;
+    useEffect(() => {
+        if (!initial || !pending) return;
+        const warn = e => { e.preventDefault(); e.returnValue = ""; };
+        window.addEventListener("beforeunload", warn);
+        return () => window.removeEventListener("beforeunload", warn);
+    }, [initial, pending]);
+    useEffect(() => {
+        if (!dirty || !canSave || saving || imagePending || autoError) return;
+        const timer = setTimeout(async () => {
+            setSaving(true);
+            try {
+                await onAutoSave(draft, saved);
+                setSaved(draft);
+            } catch (e) {
+                setAutoError(e instanceof Error ? e.message : String(e));
+            } finally {
+                setSaving(false);
+            }
+        }, 650);
+        return () => clearTimeout(timer);
+    }, [draft, saved, dirty, canSave, saving, imagePending, autoError, onAutoSave]);
+    const close = () => { if (!pending) onCancel(); };
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: close },
         React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-lg w-full ring-1 ring-[#3A3632] font-body max-h-[85vh] flex flex-col", onClick: e => e.stopPropagation() },
             React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
                 React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, initial ? "تعديل منتج" : "منتج جديد"),
-                React.createElement("button", { onClick: onCancel, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
+                React.createElement("button", { onClick: close, disabled: pending, className: "disabled:opacity-40 text-[#A8A29A] hover:text-[#F5F3F0]" },
                     React.createElement(X, { size: 20 }))),
             React.createElement("div", { className: "p-4 space-y-3 overflow-y-auto flex-1" },
                 React.createElement("input", { placeholder: "\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062A\u062C", value: name, onChange: e => setName(e.target.value), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
@@ -1019,16 +1119,15 @@ function ProductForm({ initial, onSave, onCancel }) {
                     React.createElement("label", { className: "flex-1 text-sm text-[#6EE7A8] font-bold cursor-pointer bg-[#332F2B] rounded-lg px-3 py-2.5 text-center" },
                         image ? "تغيير الصورة" : "رفع صورة",
                         React.createElement("input", { type: "file", accept: "image/*", onChange: handleImageUpload, className: "hidden" })),
-                    image && React.createElement("button", { onClick: () => setImage(null), className: "text-[#F0A0A0]" },
+                    image && React.createElement("button", { onClick: () => { imageRequest.current += 1; setImagePending(false); setImageError(false); setImage(null); }, className: "text-[#F0A0A0]" },
                         React.createElement(Trash2, { size: 16 }))),
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                     React.createElement("select", { value: category, onChange: e => setCategory(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none" }, CATEGORIES.map(c => React.createElement("option", { key: c, value: c }, c))),
                     React.createElement("input", { type: "number", placeholder: "\u0627\u0644\u0633\u0639\u0631", value: price, onChange: e => setPrice(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
                 React.createElement("div", { className: "bg-[#332F2B] rounded-lg px-3 py-2.5 space-y-2" },
                     React.createElement("label", { className: "flex items-center gap-2 text-sm text-[#F5F3F0] cursor-pointer" },
-                        React.createElement("input", { type: "checkbox", checked: onOffer, onChange: e => setOnOffer(e.target.checked) }), "منتج في صفحة العروض"),
-                    onOffer && React.createElement("input", { type: "number", placeholder: "السعر قبل الخصم (اختياري)", value: oldPrice, onChange: e => setOldPrice(e.target.value), className: "w-full bg-[#2A2724] rounded-lg px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
-                React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u0638\u0647\u0631 (\u0627\u062E\u062A\u064A\u0627\u0631\u064A\u060C \u0645\u062B\u0644 \u0631\u0642\u0645 \u0627\u0644\u0642\u0645\u064A\u0635)", value: number, onChange: e => setNumber(e.target.value), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
+                        React.createElement("input", { type: "checkbox", checked: onOffer, disabled: !OFFERS_SUPPORTED, onChange: e => setOnOffer(e.target.checked) }), "منتج في صفحة العروض"),
+                    onOffer && React.createElement("input", { type: "number", placeholder: "السعر قبل الخصم (اختياري)", value: oldPrice, disabled: !OFFERS_SUPPORTED, onChange: e => setOldPrice(e.target.value), className: "w-full bg-[#2A2724] rounded-lg px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
                 React.createElement("div", { className: "space-y-2" },
                     React.createElement("p", { className: "text-sm text-[#A8A29A]" }, "\u0627\u0644\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0627\u0644\u0623\u0644\u0648\u0627\u0646 \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646"),
                     variants.map((v, idx) => (React.createElement("div", { key: idx, className: "flex items-center gap-2" },
@@ -1041,7 +1140,22 @@ function ProductForm({ initial, onSave, onCancel }) {
                         React.createElement(Plus, { size: 14 }),
                         " \u0625\u0636\u0627\u0641\u0629 \u0645\u0642\u0627\u0633/\u0644\u0648\u0646"))),
             React.createElement("div", { className: "p-4 border-t border-[#3A3632]" },
-                React.createElement("button", { disabled: !canSave, onClick: () => onSave({ id: (initial === null || initial === void 0 ? void 0 : initial.id) || genId("prod"), name, category, price: Number(price) || 0, onOffer, oldPrice: Number(oldPrice) || 0, number: number || "—", image, variants }), className: "w-full py-3 rounded-xl bg-[#F5F3F0] disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062D\u0641\u0638 \u0627\u0644\u0645\u0646\u062A\u062C")))));
+                imageError && React.createElement("p", { role: "alert", className: "mb-2 text-sm text-[#F0A0A0]" }, "تعذّرت قراءة الصورة. اخترها مرة ثانية."),
+                initial ? React.createElement("div", { className: "flex items-center justify-between gap-3 text-sm text-[#F5F3F0]" },
+                    React.createElement("span", { role: "status" }, autoError ? "تعذّر الحفظ التلقائي. " + autoError
+                        : imagePending ? "جاري قراءة الصورة…"
+                        : dirty && !canSave ? "تأكد من الاسم واللون ومن عدم تكرار المقاس واللون."
+                        : saving || dirty ? "جاري الحفظ…" : saved === initial ? "الحفظ التلقائي مفعّل" : "تم الحفظ"),
+                    autoError && React.createElement("button", { onClick: () => setAutoError(""), className: "shrink-0 text-[#6EE7A8]" }, "إعادة المحاولة"),
+                    dirty && !canSave && !saving && !autoError && React.createElement("button", { onClick: () => {
+                        setName(saved.name);
+                        setVariants(saved.variants);
+                    }, className: "shrink-0 text-[#F0A0A0]" }, "استرجاع الاسم والمقاسات")
+                ): React.createElement("button", { disabled: !canSave || !variants.length || imagePending || saving, onClick: async () => {
+                    setSaving(true);
+                    try { await onSave(draft); }
+                    finally { setSaving(false); }
+                }, className: "w-full py-3 rounded-xl bg-[#F5F3F0] disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, saving ? "جاري الحفظ…" : "حفظ المنتج")))));
 }
 /* ============ لوحة التحكم ============ */
 function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts, onExit, onError }) {
@@ -1061,11 +1175,16 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
         .map(v => ({ product: p.name, size: v.size, color: v.color, stock: v.stock })));
     const noPriceCount = products.filter(p => !(p.price > 0)).length;
     const revenue = orders.filter(o => o.status !== "ملغي").reduce((s, o) => s + o.total, 0);
+    const autoSaveProduct = React.useCallback(async (product, previous) => {
+        await updateProductDB(product, previous);
+        saveProducts(current => current.map(p => p.id === product.id ? product : p));
+    }, [saveProducts]);
     const saveProduct = async (product) => {
         try {
             await upsertProductDB(product);
-            const exists = products.some(p => p.id === product.id);
-            saveProducts(exists ? products.map(p => p.id === product.id ? product : p) : [...products, product]);
+            saveProducts(current => current.some(p => p.id === product.id)
+                ? current.map(p => p.id === product.id ? product : p)
+                : [...current, product]);
             setShowForm(false);
             setEditing(null);
         }
@@ -1076,7 +1195,7 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
     const deleteProduct = async (id) => {
         try {
             await deleteProductDB(id);
-            saveProducts(products.filter(p => p.id !== id));
+            saveProducts(current => current.filter(p => p.id !== id));
         }
         catch (e) {
             onError && onError("تعذّر حذف المنتج: " + (e && e.message ? e.message : String(e)));
@@ -1205,7 +1324,7 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                         ") \u00D7 ",
                         it.qty))),
                     React.createElement("p", { className: "font-display font-bold text-[#C9A227]" }, fmt(o.total)))))))),
-        showForm && React.createElement(ProductForm, { initial: editing, onSave: saveProduct, onCancel: () => { setShowForm(false); setEditing(null); } })));
+        showForm && React.createElement(ProductForm, { initial: editing, onSave: saveProduct, onAutoSave: autoSaveProduct, onCancel: () => { setShowForm(false); setEditing(null); } })));
 }
 /* ============ بوابة دخول الأدمن ============ */
 function AdminGate({ onSuccess, onCancel }) {
@@ -1237,41 +1356,32 @@ function App() {
     const [view, setView] = useState("store");
     const [gender, setGender] = useState(null);
     const [showGate, setShowGate] = useState(false);
-    useEffect(() => {
-        (async () => {
-            try {
-                const list = await loadProductsFromDB();
-                // لو الجدول فاضي (لم تُشغَّل الترحيلة بعد) اعرض النسخة المضمّنة للقراءة فقط
-                setProducts(list.length ? list : IMPORTED_PRODUCTS);
-            }
-            catch (e) {
-                setProducts(IMPORTED_PRODUCTS);
-            }
-            setLoading(false);
-        })();
-    }, []);
     const [saveError, setSaveError] = useState(null);
-    // المنتجات تُحفظ الآن عبر عمليات مُوجَّهة (upsertProductDB / RPC)؛ هذه للحالة المحلية فقط
-    const saveProducts = (updated) => { setProducts(updated); };
+    const [productLoadError, setProductLoadError] = useState(false);
+    const productRequest = useRef(0);
+    const saveProducts = React.useCallback((updated) => {
+        productRequest.current += 1;
+        setProducts(updated);
+    }, []);
     const refreshProducts = async () => {
+        const request = ++productRequest.current;
+        setProductLoadError(false);
         try {
-            const p = await window.storage.get("products", true);
-            setProducts(JSON.parse(p.value));
-            setSaveError(null);
+            const list = await loadProductsFromDB();
+            if (request === productRequest.current) setProducts(list);
+        } catch (e) {
+            if (request === productRequest.current) setProductLoadError(true);
         }
-        catch (e) { setSaveError("تعذّر تحديث المنتجات: " + (e && e.message ? e.message : String(e))); }
     };
+    useEffect(() => {
+        refreshProducts().finally(() => setLoading(false));
+    }, []);
     const saveOrders = async (updated) => { setOrders(updated); };
     const addOrder = async (order) => {
         const updated = [...orders, order];
         await saveOrders(updated);
     };
-    const refreshAll = async () => {
-        try {
-            const p = await window.storage.get("products", true);
-            setProducts(JSON.parse(p.value));
-        }
-        catch (e) { }
+    const refreshOrders = async () => {
         try {
             const o = await window.storage.get("orders", true);
             setOrders(JSON.parse(o.value));
@@ -1285,6 +1395,9 @@ function App() {
     }
     return (React.createElement("div", { dir: "rtl" },
         React.createElement(GlobalStyle, null),
+        productLoadError && React.createElement("div", { role: "alert", className: "relative z-40 flex flex-wrap items-center justify-center gap-3 bg-[#4A3521] p-3 text-sm text-[#F5F3F0]" },
+            "تعذّر تحميل أحدث بيانات المنتجات.",
+            React.createElement("button", { type: "button", onClick: refreshProducts, className: "rounded-lg bg-[#F5F3F0] px-3 py-1.5 font-bold text-[#22201E]" }, "إعادة المحاولة")),
         saveError && React.createElement("div", { className: "fixed bottom-4 right-4 left-4 md:left-auto md:w-96 z-[9999] bg-[#3A1D1D] ring-1 ring-[#6A3232] text-[#F2B8B8] rounded-xl p-4 font-body text-sm shadow-lg" },
             React.createElement("div", { className: "font-bold mb-1" }, "لم يتم الحفظ في قاعدة البيانات"),
             React.createElement("div", { className: "text-xs opacity-90 break-words" }, saveError),
@@ -1295,7 +1408,7 @@ function App() {
                 : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
             React.createElement("button", { onClick: () => setShowGate(true), className: "fixed bottom-4 left-4 w-10 h-10 rounded-full bg-[#2A2724] ring-1 ring-[#3A3632] text-[#8A847B] flex items-center justify-center z-20" },
                 React.createElement(Settings, { size: 16 })),
-            showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshAll(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { adminLogout(); setView("store"); refreshAll(); } }))));
+            showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshProducts(); refreshOrders(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { adminLogout(); setView("store"); refreshProducts(); } }))));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
 </script>
