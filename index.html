@@ -1050,8 +1050,12 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
     const [showForm, setShowForm] = useState(false);
     const [productSearch, setProductSearch] = useState("");
     const [productCategoryFilter, setProductCategoryFilter] = useState("الكل");
-    const filteredAdminProducts = useMemo(() => products.filter(p => (productCategoryFilter === "الكل" || p.category === productCategoryFilter) &&
-        p.name.includes(productSearch.trim())), [products, productSearch, productCategoryFilter]);
+    const filteredAdminProducts = useMemo(() => {
+        const section = SECTIONS["رجال"].find(section => section.name === productCategoryFilter);
+        const categories = section ? section.cats : [productCategoryFilter];
+        return products.filter(p => (productCategoryFilter === "الكل" || categories.includes(p.category)) &&
+            p.name.includes(productSearch.trim()));
+    }, [products, productSearch, productCategoryFilter]);
     const lowStockList = products.flatMap(p => p.variants
         .filter(v => v.stock <= LOW_STOCK)
         .map(v => ({ product: p.name, size: v.size, color: v.color, stock: v.stock })));
@@ -1147,7 +1151,8 @@ function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts
                     React.createElement("input", { value: productSearch, onChange: e => setProductSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C \u0628\u0627\u0644\u0627\u0633\u0645...", className: "flex-1 min-w-[160px] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-xl px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
                     React.createElement("select", { value: productCategoryFilter, onChange: e => setProductCategoryFilter(e.target.value), className: "bg-[#2A2724] ring-1 ring-[#3A3632] rounded-xl px-3 py-2 text-[#F5F3F0] outline-none" },
                         React.createElement("option", { value: "\u0627\u0644\u0643\u0644" }, "\u0643\u0644 \u0627\u0644\u0623\u0642\u0633\u0627\u0645"),
-                        CATEGORIES.map(c => React.createElement("option", { key: c, value: c }, c)))),
+                        CATEGORIES.filter(c => c !== "نسخة اللاعبين 26" && c !== "نسخة اللاعبين 27")
+                            .map(c => React.createElement("option", { key: c, value: c }, c)))),
                 React.createElement("p", { className: "text-xs text-[#8A847B]" },
                     "\u0639\u0631\u0636 ",
                     filteredAdminProducts.length,
