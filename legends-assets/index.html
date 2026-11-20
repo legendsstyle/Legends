@@ -1,0 +1,1542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="google-site-verification" content="LnQFYHD1GnP7W6OgN0voj-A_s8o9w11ZYrXqeXI12M0" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>legends_style | متجر أزياء الملاعب</title>
+<meta name="description" content="legends_style - متجر إلكتروني في عُمان لبيع قمصان الأندية والمنتخبات العالمية والملابس الرياضية الأصلية. تشكيلة واسعة بمقاسات وألوان متعددة، أسعار مناسبة، وطلب سهل عبر واتساب." />
+<meta name="keywords" content="قمصان أندية, قمصان منتخبات, ملابس رياضية, متجر رياضي عمان, قمصان كرة قدم, jersey oman, legends style, قمصان اصلية, ازياء الملاعب" />
+<meta name="robots" content="index, follow" />
+<meta property="og:title" content="legends_style | متجر أزياء الملاعب" />
+<meta property="og:description" content="قمصان الأندية والمنتخبات العالمية وملابس رياضية أصلية، بمقاسات وألوان متعددة، توصيل داخل عُمان." />
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="ar_OM" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<style>
+body{margin:0;background:#22201E;}
+
+/* ===== خلفية متحركة للصفحة الرئيسية ===== */
+.ls-stage{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.ls-orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.55}
+.ls-orb-a{width:46vw;height:46vw;min-width:280px;min-height:280px;background:#E6D5A8;top:-12%;right:-8%;animation:ls-float-a 18s ease-in-out infinite}
+.ls-orb-b{width:38vw;height:38vw;min-width:240px;min-height:240px;background:#E4D6BE;bottom:-14%;left:-10%;animation:ls-float-b 22s ease-in-out infinite}
+.ls-orb-c{width:30vw;height:30vw;min-width:200px;min-height:200px;background:#EBDDC4;top:38%;left:42%;opacity:.45;animation:ls-float-c 26s ease-in-out infinite}
+@keyframes ls-float-a{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-6%,7%) scale(1.12)}}
+@keyframes ls-float-b{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(8%,-6%) scale(1.15)}}
+@keyframes ls-float-c{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-9%,-8%) scale(.88)}}
+
+.ls-grid{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(34,32,30,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,32,30,.06) 1px,transparent 1px);
+  background-size:56px 56px;
+  mask-image:radial-gradient(ellipse 75% 55% at 50% 45%,#000 30%,transparent 100%);
+  -webkit-mask-image:radial-gradient(ellipse 75% 55% at 50% 45%,#000 30%,transparent 100%);
+  animation:ls-drift 40s linear infinite}
+@keyframes ls-drift{from{background-position:0 0,0 0}to{background-position:56px 56px,56px 56px}}
+
+.ls-sweep{position:absolute;top:0;bottom:0;width:38%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.45),transparent);
+  animation:ls-sweep 9s ease-in-out infinite}
+@keyframes ls-sweep{0%{transform:translateX(-140%)}55%,100%{transform:translateX(360%)}}
+
+.ls-rise{opacity:0;transform:translateY(18px);animation:ls-rise .75s cubic-bezier(.22,.9,.3,1) forwards}
+.ls-d1{animation-delay:.12s}.ls-d2{animation-delay:.22s}.ls-d3{animation-delay:.32s}
+.ls-d4{animation-delay:.42s}.ls-d5{animation-delay:.6s}
+@keyframes ls-rise{to{opacity:1;transform:translateY(0)}}
+
+/* ===== فيديو الخلفية (يوتيوب) ===== */
+.ls-video-wrap{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:1}
+.ls-video{
+  position:absolute;top:0;left:0;
+  width:100%;height:100%;
+  object-fit:cover;                      /* يملأ الشاشة بدون تشويه */
+  border:0;pointer-events:none;
+  opacity:0;animation:ls-video-in 1.6s ease-out .3s forwards;
+}
+@keyframes ls-video-in{to{opacity:.4}}
+
+/* درع شفاف يمنع ظهور أزرار تحكم المتصفح فوق الفيديو */
+.ls-video-shield{
+  position:absolute;inset:0;z-index:3;
+  background:transparent;
+  touch-action:pan-y;              /* يسمح بالتمرير ويمنع اللمس على المشغّل */
+  -webkit-tap-highlight-color:transparent;
+}
+/* إخفاء عناصر التحكم الأصلية في متصفحات ويبكِت */
+.ls-video::-webkit-media-controls,
+.ls-video::-webkit-media-controls-panel,
+.ls-video::-webkit-media-controls-start-playback-button,
+.ls-video::-webkit-media-controls-play-button,
+.ls-video::-webkit-media-controls-overlay-play-button{
+  display:none!important;-webkit-appearance:none!important;opacity:0!important;
+}
+
+/* طبقة تعتيم فوق الفيديو حتى تبقى النصوص مقروءة */
+.ls-video-veil{
+  position:absolute;inset:0;z-index:4;pointer-events:none;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 45%, rgba(245,241,234,.55), rgba(245,241,234,.82) 100%),
+    linear-gradient(to bottom, rgba(245,241,234,.7), rgba(245,241,234,.4) 35%, rgba(245,241,234,.96));
+}
+
+/* على الشاشات الصغيرة جداً نخفي الفيديو ونكتفي بالخلفية المتحركة */
+@media (max-width:480px){ .ls-video-wrap,.ls-video-shield,.ls-video-veil{display:none} }
+@media (prefers-reduced-motion:reduce){ .ls-video-wrap,.ls-video-shield,.ls-video-veil{display:none} }
+
+/* ===== ظهور تدريجي عند التمرير ===== */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.22,.9,.3,1),transform .7s cubic-bezier(.22,.9,.3,1)}
+.rv-in{opacity:1;transform:translateY(0)}
+.rv-d1{transition-delay:.1s}.rv-d2{transition-delay:.2s}
+.rv-d3{transition-delay:.3s}.rv-d4{transition-delay:.4s}
+
+/* ===== مؤشر النزول ===== */
+.ls-mouse{width:24px;height:38px;border:2px solid rgba(34,32,30,.35);border-radius:14px;display:flex;justify-content:center;padding-top:6px}
+.ls-wheel{width:3px;height:7px;background:#C9A227;border-radius:2px;animation:ls-wheel 1.7s ease-in-out infinite}
+@keyframes ls-wheel{0%{opacity:0;transform:translateY(0)}30%{opacity:1}70%{opacity:1;transform:translateY(11px)}100%{opacity:0;transform:translateY(13px)}}
+
+/* ===== توهج خلف قسم الاختيار ===== */
+.ls-glow{position:absolute;left:50%;top:10%;transform:translateX(-50%);width:70vw;height:60%;
+  background:radial-gradient(ellipse at center,rgba(201,162,39,.13),transparent 68%);
+  filter:blur(46px);pointer-events:none}
+
+@media (prefers-reduced-motion:reduce){
+  .ls-orb,.ls-grid,.ls-sweep,.ls-rise,.ls-wheel{animation:none!important}
+  .ls-rise{opacity:1;transform:none}
+  .rv{opacity:1!important;transform:none!important;transition:none!important}
+}
+</style>
+<style>
+.men-section-landing { background: #f7f5f0; }
+.men-section-landing > header { background: rgba(255, 253, 249, .96); border-color: #e2dbd0; }
+.men-section-landing > header button { color: #39332b; background: #f0ebe2; --tw-ring-color: #ddd5c8; }
+.men-section-landing > header button:hover, .men-section-landing > header .font-display { color: #27231e; }
+.men-section-landing .men-landing-cart > span { color: white; background: #775719; }
+.men-section-landing .men-landing-hero { border-color: #e2dbd0; }
+.men-section-landing .men-landing-hero > [aria-hidden="true"] { background: linear-gradient(120deg, #f9f7f2, #eee8de); }
+.men-section-landing .men-landing-hero h1 { color: #27231e; }
+.men-section-landing .men-landing-hero p, .men-section-landing .men-landing-hero a { color: #51483d; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<div id="debug-overlay" style="position:fixed;inset:0;background:#1c1917;color:#86efac;font-family:monospace;font-size:13px;padding:14px;white-space:pre-wrap;overflow:auto;z-index:99999;display:none;"></div>
+<script>
+(function () {
+  function showErr(msg) {
+    var el = document.getElementById("debug-overlay");
+    el.style.display = "block";
+    el.textContent += msg + "\n\n";
+  }
+  window.addEventListener("error", function (e) {
+    showErr("ERROR: " + e.message + (e.filename ? " (" + e.filename + ":" + e.lineno + ")" : ""));
+  });
+  window.addEventListener("unhandledrejection", function (e) {
+    var r = e.reason;
+    showErr("PROMISE REJECTION: " + (r && r.message ? r.message : String(r)));
+  });
+  setTimeout(function () {
+    var root = document.getElementById("root");
+    if (root && root.children.length === 0) {
+      showErr("تنبيه: مضت 8 ثوان والصفحة لسا فاضية.");
+    }
+  }, 8000);
+})();
+</script>
+<script>
+"use strict";
+const { useState, useEffect, useMemo, useRef } = React;
+/* ============ أيقونات بسيطة بديلة لمكتبة lucide-react (بدون اعتماديات خارجية) ============ */
+function mkIcon(symbol) {
+    return function Icon({ size = 16, className = "" }) {
+        return React.createElement("span", { className: className, style: { fontSize: size, lineHeight: 1, display: "inline-block" } }, symbol);
+    };
+}
+const ShoppingCart = mkIcon("🛒");
+const Search = mkIcon("🔍");
+const X = mkIcon("✕");
+const Plus = mkIcon("+");
+const Minus = mkIcon("−");
+const Settings = mkIcon("⚙");
+const Package = mkIcon("📦");
+const ClipboardList = mkIcon("📋");
+const AlertTriangle = mkIcon("⚠");
+const Trash2 = mkIcon("🗑");
+const Check = mkIcon("✔");
+const LayoutGrid = mkIcon("▦");
+const ChevronLeft = mkIcon("←");
+const Loader2 = mkIcon("⏳");
+const PencilLine = mkIcon("✎");
+/* ============ بديل window.storage يعتمد على localStorage الخاص بمتصفح الزائر ============
+   ملاحظة مهمة: هذا يجعل بيانات كل متجر محفوظة محليًا في متصفح كل زائر على حدة،
+   وليست مشتركة تلقائيًا بين كل الزوار عبر الإنترنت. لمخزون وطلبات مشتركة حقيقية
+   بين كل الأجهزة، تحتاج قاعدة بيانات فعلية (مثل Supabase أو Firebase). */
+const SUPABASE_URL = "https://jjlevqwwxmmefcbnixoh.supabase.co";
+const SUPABASE_KEY = "sb_publishable_DRszk6UuzTtKhbdffBb8Eg_JBT0TWV3";
+// ===== جلسة المدير (في الذاكرة فقط، تنتهي بإعادة تحميل الصفحة) =====
+let _adminSession = null;
+async function adminAuthCall(grant, body) {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=" + grant, {
+        method: "POST",
+        headers: { apikey: SUPABASE_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+    });
+    if (!res.ok) throw new Error("auth failed");
+    return res.json();
+}
+async function adminLogin(email, password) {
+    _adminSession = await adminAuthCall("password", { email: email.trim(), password });
+    try {
+        const r = await sbRequest("rpc/is_admin", { method: "POST", body: "{}" });
+        if ((await r.json()) !== true) throw new Error("not admin");
+    } catch (e) { _adminSession = null; throw e; }
+}
+async function refreshAdminSession() {
+    try {
+        _adminSession = await adminAuthCall("refresh_token", { refresh_token: _adminSession.refresh_token });
+        return true;
+    } catch (e) { _adminSession = null; return false; }
+}
+function adminLogout() { _adminSession = null; }
+async function sbRequest(path, options = {}) {
+    // مهلة قصوى 25 ثانية حتى لا يتعلّق الموقع إذا تأخر الاتصال
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 25000);
+    let res;
+    try {
+        res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+            ...options,
+            signal: ctrl.signal,
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: "Bearer " + (_adminSession ? _adminSession.access_token : SUPABASE_KEY),
+                "Content-Type": "application/json",
+                ...(options.headers || {}),
+            },
+        });
+    }
+    catch (e) {
+        clearTimeout(timer);
+        if (e && e.name === "AbortError") throw new Error("انتهت مهلة الاتصال بقاعدة البيانات (25 ثانية)");
+        throw e;
+    }
+    clearTimeout(timer);
+    if (res.status === 401 && _adminSession && !options._retried) {
+        if (await refreshAdminSession()) return sbRequest(path, { ...options, _retried: true });
+    }
+    if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error("Supabase " + res.status + " على الجدول \"" + path.split("?")[0] + "\" — " + (text || "بدون تفاصيل"));
+    }
+    return res;
+}
+// ===== خريطة الصور: مضمّنة في الملف نفسه، فلا تُحمَّل من قاعدة البيانات =====
+const bundledFiles = {"p1":["images-a7bff5a50d2b.bin",0,14594],"p2":["images-a7bff5a50d2b.bin",14594,13354],"p3":["images-a7bff5a50d2b.bin",27948,9744],"p4":["images-a7bff5a50d2b.bin",37692,14664],"p5":["images-a7bff5a50d2b.bin",52356,11476],"p6":["images-49249a48bae0.bin",0,7570],"p7":["images-49249a48bae0.bin",7570,7786],"p8":["images-49249a48bae0.bin",15356,10928],"p9":["images-49249a48bae0.bin",26284,13980],"p10":["images-49249a48bae0.bin",40264,17312],"p11":["images-9b0b36070cff.bin",0,14706],"p12":["images-9b0b36070cff.bin",14706,10996],"p13":["images-9b0b36070cff.bin",25702,7244],"p14":["images-9b0b36070cff.bin",32946,5894],"p15":["images-9b0b36070cff.bin",38840,8792],"p16":["images-55256ac62b22.bin",0,10344],"p17":["images-55256ac62b22.bin",10344,17100],"p18":["images-55256ac62b22.bin",27444,14322],"p19":["images-55256ac62b22.bin",41766,11432],"p20":["images-55256ac62b22.bin",53198,12484],"p21":["images-5800d468eedf.bin",0,14742],"p22":["images-5800d468eedf.bin",14742,9240],"p23":["images-5800d468eedf.bin",23982,14592],"p24":["images-5800d468eedf.bin",38574,6498],"p25":["images-5800d468eedf.bin",45072,11212],"p26":["images-fb586beed867.bin",0,6486],"p27":["images-fb586beed867.bin",6486,10498],"p28":["images-fb586beed867.bin",16984,14104],"p29":["images-fb586beed867.bin",31088,11508],"p30":["images-fb586beed867.bin",42596,8616],"p31":["images-e0bb9e66144b.bin",0,7462],"p32":["images-e0bb9e66144b.bin",7462,11442],"p33":["images-e0bb9e66144b.bin",18904,7464],"p34":["images-e0bb9e66144b.bin",26368,7332],"p35":["images-e0bb9e66144b.bin",33700,7668],"p36":["images-9fba7fceb300.bin",0,20554],"p37":["images-9fba7fceb300.bin",20554,12984],"p38":["images-9fba7fceb300.bin",33538,9870],"p39":["images-9fba7fceb300.bin",43408,8564],"p40":["images-9fba7fceb300.bin",51972,8168],"p41":["images-8458c5fc65eb.bin",0,10920],"p42":["images-8458c5fc65eb.bin",10920,7234],"p44":["images-8458c5fc65eb.bin",18154,6794],"p45":["images-8458c5fc65eb.bin",24948,6686],"p46":["images-8458c5fc65eb.bin",31634,13436],"p47":["images-b9c997909334.bin",0,10790],"p48":["images-b9c997909334.bin",10790,7688],"p49":["images-b9c997909334.bin",18478,11070],"p50":["images-b9c997909334.bin",29548,8528],"p51":["images-b9c997909334.bin",38076,11134],"p52":["images-278d52a98f7b.bin",0,12100],"p53":["images-278d52a98f7b.bin",12100,7302],"p54":["images-278d52a98f7b.bin",19402,8236],"p55":["images-278d52a98f7b.bin",27638,7698],"p56":["images-278d52a98f7b.bin",35336,8898],"p57":["images-7143138ff6c2.bin",0,9450],"p58":["images-7143138ff6c2.bin",9450,8770],"p59":["images-7143138ff6c2.bin",18220,6684],"p60":["images-7143138ff6c2.bin",24904,7162],"p61":["images-7143138ff6c2.bin",32066,7444],"p62":["images-ae2b3ce3baa8.bin",0,4354],"p63":["images-ae2b3ce3baa8.bin",4354,7594],"p64":["images-ae2b3ce3baa8.bin",11948,7864],"p65":["images-ae2b3ce3baa8.bin",19812,9224],"p66":["images-ae2b3ce3baa8.bin",29036,11186],"p67":["images-feb6281af82b.bin",0,9242],"p68":["images-feb6281af82b.bin",9242,8454],"p69":["images-feb6281af82b.bin",17696,8472],"p70":["images-feb6281af82b.bin",26168,8628],"p71":["images-feb6281af82b.bin",34796,9676],"p72":["images-097217ee3738.bin",0,10190],"p73":["images-097217ee3738.bin",10190,7558],"p74":["images-097217ee3738.bin",17748,5940],"p75":["images-097217ee3738.bin",23688,12046],"p76":["images-097217ee3738.bin",35734,8552],"p77":["images-ec9bfb5173ae.bin",0,8090],"p78":["images-ec9bfb5173ae.bin",8090,8700],"p79":["images-ec9bfb5173ae.bin",16790,8072],"p80":["images-ec9bfb5173ae.bin",24862,9710],"p81":["images-ec9bfb5173ae.bin",34572,7852],"p82":["images-610d9bf0fcd2.bin",0,6974],"p83":["images-610d9bf0fcd2.bin",6974,8676],"p84":["images-610d9bf0fcd2.bin",15650,11666],"p85":["images-610d9bf0fcd2.bin",27316,12948],"p86":["images-610d9bf0fcd2.bin",40264,6126],"p87":["images-fb2fabbbaefe.bin",0,8798],"p89":["images-fb2fabbbaefe.bin",8798,11328],"p90":["images-fb2fabbbaefe.bin",20126,10348],"p91":["images-fb2fabbbaefe.bin",30474,10508],"p92":["images-fb2fabbbaefe.bin",40982,11086],"p93":["images-7a61c2d4a450.bin",0,10284],"p94":["images-7a61c2d4a450.bin",10284,12458],"p95":["images-7a61c2d4a450.bin",22742,8048],"p97":["images-7a61c2d4a450.bin",30790,11172],"p98":["images-7a61c2d4a450.bin",41962,11986],"p99":["images-8b892ff031c2.bin",0,11384],"p100":["images-8b892ff031c2.bin",11384,12526],"p102":["images-8b892ff031c2.bin",23910,11932],"p103":["images-8b892ff031c2.bin",35842,10206],"p104":["images-8b892ff031c2.bin",46048,13642],"p105":["images-36342c2f2b02.bin",0,9642],"p106":["images-36342c2f2b02.bin",9642,11120],"p107":["images-36342c2f2b02.bin",20762,13116],"p108":["images-36342c2f2b02.bin",33878,10368],"p109":["images-36342c2f2b02.bin",44246,13922],"p110":["images-0fd81105abac.bin",0,9930],"p111":["images-0fd81105abac.bin",9930,8978],"p112":["images-0fd81105abac.bin",18908,12612],"p113":["images-0fd81105abac.bin",31520,11090],"p114":["images-0fd81105abac.bin",42610,9506],"p116":["images-a1e1f0f37bf5.bin",0,13422],"p118":["images-a1e1f0f37bf5.bin",13422,11116],"p119":["images-a1e1f0f37bf5.bin",24538,16092],"p121":["images-a1e1f0f37bf5.bin",40630,15304],"p122":["images-a1e1f0f37bf5.bin",55934,20920],"p123":["images-fd25e64f863b.bin",0,21828],"p124":["images-fd25e64f863b.bin",21828,20802],"p125":["images-a7bff5a50d2b.bin",0,14594],"p126":["images-a7bff5a50d2b.bin",14594,13354],"p127":["images-a7bff5a50d2b.bin",27948,9744],"p128":["images-a7bff5a50d2b.bin",52356,11476],"p129":["images-49249a48bae0.bin",0,7570],"p130":["images-fd25e64f863b.bin",42630,9632],"p131":["images-fd25e64f863b.bin",52262,13328],"p132":["images-5800d468eedf.bin",45072,11212],"p133":["images-fb586beed867.bin",0,6486],"p134":["images-fb586beed867.bin",6486,10498],"p135":["images-8458c5fc65eb.bin",18154,6794],"p136":["images-fd25e64f863b.bin",65590,8130],"p137":["images-55256ac62b22.bin",0,10344],"p138":["images-e0bb9e66144b.bin",7462,11442],"p139":["images-e0bb9e66144b.bin",18904,7464],"p140":["images-e0bb9e66144b.bin",26368,7332],"p141":["images-9fba7fceb300.bin",0,20554],"p142":["images-9fba7fceb300.bin",20554,12984],"p143":["images-9fba7fceb300.bin",33538,9870],"p144":["images-278d52a98f7b.bin",19402,8236],"p145":["images-278d52a98f7b.bin",27638,7698],"p146":["images-278d52a98f7b.bin",35336,8898],"p147":["images-7143138ff6c2.bin",0,9450],"p148":["images-7143138ff6c2.bin",9450,8770],"p149":["images-7143138ff6c2.bin",18220,6684],"p150":["images-7143138ff6c2.bin",32066,7444],"p151":["images-ae2b3ce3baa8.bin",4354,7594],"p152":["images-ae2b3ce3baa8.bin",11948,7864],"p153":["images-ae2b3ce3baa8.bin",19812,9224],"p154":["images-ec9bfb5173ae.bin",24862,9710],"p155":["images-c5c1add8c528.bin",0,10976],"p156":["images-9b0b36070cff.bin",25702,7244],"p157":["images-9b0b36070cff.bin",38840,8792],"p158":["images-c5c1add8c528.bin",10976,12548],"p159":["images-55256ac62b22.bin",27444,14322],"p160":["images-c5c1add8c528.bin",23524,13126],"p161":["images-c5c1add8c528.bin",36650,13956],"p162":["images-5800d468eedf.bin",14742,9240],"p163":["images-5800d468eedf.bin",23982,14592],"p164":["images-8458c5fc65eb.bin",0,10920],"p165":["images-b9c997909334.bin",10790,7688],"p166":["images-feb6281af82b.bin",17696,8472],"p167":["images-feb6281af82b.bin",26168,8628],"p168":["images-feb6281af82b.bin",34796,9676],"p169":["images-c5c1add8c528.bin",50606,11878],"p170":["images-49249a48bae0.bin",40264,17312],"p171":["images-9b0b36070cff.bin",14706,10996],"p172":["images-49b79742c4ce.bin",0,10726],"p173":["images-fb586beed867.bin",31088,11508],"p174":["images-fb586beed867.bin",42596,8616],"p175":["images-b9c997909334.bin",29548,8528],"p176":["images-b9c997909334.bin",38076,11134],"p177":["images-278d52a98f7b.bin",0,12100],"p178":["images-49b79742c4ce.bin",10726,4818],"p179":["images-49b79742c4ce.bin",15544,9162],"p180":["images-610d9bf0fcd2.bin",27316,12948],"p181":["images-fb2fabbbaefe.bin",0,8798],"p182":["images-b9c997909334.bin",18478,11070],"p184":["images-49b79742c4ce.bin",24706,7628],"p186":["images-097217ee3738.bin",35734,8552],"p187":["images-49b79742c4ce.bin",32334,5998],"p189":["images-ae2b3ce3baa8.bin",0,4354],"p190":["images-47f2133a156c.bin",0,9388],"p191":["images-47f2133a156c.bin",9388,10082],"p192":["images-47f2133a156c.bin",19470,5748],"p193":["images-47f2133a156c.bin",25218,6108],"p194":["images-47f2133a156c.bin",31326,12614],"p195":["images-1aac864b8757.bin",0,6374],"p196":["images-1aac864b8757.bin",6374,11752],"p197":["images-1aac864b8757.bin",18126,11370],"p198":["images-1aac864b8757.bin",29496,23836],"p199":["images-1aac864b8757.bin",53332,23690],"p200":["images-63c4b329194c.bin",0,21346],"p201":["images-63c4b329194c.bin",21346,24908],"p202":["images-63c4b329194c.bin",46254,16952],"p203":["images-63c4b329194c.bin",63206,6176],"p204":["images-63c4b329194c.bin",69382,8730],"p205":["images-8a721ea82da8.bin",0,10788],"p206":["images-8a721ea82da8.bin",10788,11980],"p208":["images-8a721ea82da8.bin",22768,12334],"p209":["images-8a721ea82da8.bin",35102,9446],"p210":["images-8a721ea82da8.bin",44548,9088],"p211":["images-a27c9d7d6361.bin",0,9226],"p212":["images-a27c9d7d6361.bin",9226,3910],"p213":["images-a27c9d7d6361.bin",13136,6694],"p214":["images-a27c9d7d6361.bin",19830,7518],"p215":["images-a27c9d7d6361.bin",27348,6138],"p216":["images-c5595986d09b.bin",0,6862],"p217":["images-c5595986d09b.bin",6862,6166],"p218":["images-c5595986d09b.bin",13028,6704],"p219":["images-c5595986d09b.bin",19732,6818],"p220":["images-c5595986d09b.bin",26550,4986],"p221":["images-a73f05bec09a.bin",0,4504],"p222":["images-a73f05bec09a.bin",4504,10112],"p223":["images-a73f05bec09a.bin",14616,7908],"p224":["images-a73f05bec09a.bin",22524,4366],"p225":["images-a73f05bec09a.bin",26890,6356],"p226":["images-373f2ff32d49.bin",0,8348],"p228":["images-373f2ff32d49.bin",8348,5766],"p229":["images-373f2ff32d49.bin",14114,6226],"p230":["images-373f2ff32d49.bin",20340,5632],"p231":["images-373f2ff32d49.bin",25972,7132],"p232":["images-ca7fea3f879a.bin",0,7720],"p233":["images-ca7fea3f879a.bin",7720,6006],"p234":["images-ca7fea3f879a.bin",13726,5510],"p235":["images-ca7fea3f879a.bin",19236,7490],"p236":["images-ca7fea3f879a.bin",26726,7406],"p237":["images-aa5006d677ca.bin",0,10878],"p238":["images-aa5006d677ca.bin",10878,7668],"p239":["images-aa5006d677ca.bin",18546,6610],"p240":["images-aa5006d677ca.bin",25156,9342],"p241":["images-aa5006d677ca.bin",34498,7444],"p242":["images-b2c22d41f06e.bin",0,7082],"p243":["images-b2c22d41f06e.bin",7082,6516],"p244":["images-b2c22d41f06e.bin",13598,10996],"p245":["images-b2c22d41f06e.bin",24594,7846],"p246":["images-b2c22d41f06e.bin",32440,16184],"p247":["images-7fa3ac98efb8.bin",0,5142],"p248":["images-7fa3ac98efb8.bin",5142,8498],"p249":["images-7fa3ac98efb8.bin",13640,12234],"p250":["images-7fa3ac98efb8.bin",25874,12814],"p252":["images-7fa3ac98efb8.bin",38688,16856],"p253":["images-59d45c93053f.bin",0,16616],"p255":["images-59d45c93053f.bin",16616,12400],"p256":["images-59d45c93053f.bin",29016,4564],"p257":["images-59d45c93053f.bin",33580,5778],"p258":["images-59d45c93053f.bin",39358,6004],"p259":["images-b22c356f6f96.bin",0,5422],"p260":["images-b22c356f6f96.bin",5422,4370],"p264":["images-b22c356f6f96.bin",9792,7306],"p265":["images-b22c356f6f96.bin",17098,6180],"p266":["images-b22c356f6f96.bin",23278,6186],"p267":["images-81126231d049.bin",0,5600],"p268":["images-81126231d049.bin",5600,7214],"p269":["images-81126231d049.bin",12814,5596],"p270":["images-81126231d049.bin",18410,5422],"p271":["images-81126231d049.bin",23832,9888],"p272":["images-c3d725a6dd82.bin",0,8288],"p273":["images-c3d725a6dd82.bin",8288,7696],"p274":["images-c3d725a6dd82.bin",15984,8070],"p275":["images-c3d725a6dd82.bin",24054,8944],"p276":["images-c3d725a6dd82.bin",32998,8382],"p277":["images-d2387c255908.bin",0,9160],"p278":["images-d2387c255908.bin",9160,10660],"p279":["images-d2387c255908.bin",19820,6018],"p281":["images-d2387c255908.bin",25838,6908],"p282":["images-d2387c255908.bin",32746,7122],"p283":["images-435ffaf5ed67.bin",0,8754],"p284":["images-435ffaf5ed67.bin",8754,7474],"p285":["images-435ffaf5ed67.bin",16228,9482],"p286":["images-435ffaf5ed67.bin",25710,10520],"p287":["images-435ffaf5ed67.bin",36230,5890],"p288":["images-9114a55b2a7b.bin",0,7746],"p289":["images-9114a55b2a7b.bin",7746,7844],"p290":["images-9114a55b2a7b.bin",15590,8846],"p293":["images-9114a55b2a7b.bin",24436,6692],"p294":["images-9114a55b2a7b.bin",31128,5848],"p295":["images-2d573b9b9194.bin",0,5880],"p296":["images-2d573b9b9194.bin",5880,9438],"p297":["images-2d573b9b9194.bin",15318,4944],"p298":["images-2d573b9b9194.bin",20262,4886],"p299":["images-2d573b9b9194.bin",25148,6550],"p300":["images-e44811ce4e2b.bin",0,5540],"p301":["images-e44811ce4e2b.bin",5540,4770],"p302":["images-e44811ce4e2b.bin",10310,8082],"p303":["images-e44811ce4e2b.bin",18392,6650],"p304":["images-e44811ce4e2b.bin",25042,5162],"p305":["images-7ff6db7a1477.bin",0,5078],"p306":["images-7ff6db7a1477.bin",5078,6048],"p307":["images-7ff6db7a1477.bin",11126,5830],"p308":["images-7ff6db7a1477.bin",16956,4240],"p310":["images-7ff6db7a1477.bin",21196,9820],"p311":["images-cc0109e5748f.bin",0,10432],"p312":["images-cc0109e5748f.bin",10432,13598],"p313":["images-cc0109e5748f.bin",24030,9914],"p314":["images-cc0109e5748f.bin",33944,9834],"p315":["images-cc0109e5748f.bin",43778,8436],"p316":["images-35ac86aeaefb.bin",0,10190],"p317":["images-35ac86aeaefb.bin",10190,11080],"p318":["images-35ac86aeaefb.bin",21270,6064],"p319":["images-35ac86aeaefb.bin",27334,10596],"p320":["images-35ac86aeaefb.bin",37930,8584],"p321":["images-41b0e3d707de.bin",0,10432],"p322":["images-41b0e3d707de.bin",10432,8318],"p323":["images-41b0e3d707de.bin",18750,9010],"p324":["images-41b0e3d707de.bin",27760,12466],"p325":["images-41b0e3d707de.bin",40226,5692],"p326":["images-809f9c62971a.bin",0,11086],"p327":["images-809f9c62971a.bin",11086,11168],"p328":["images-809f9c62971a.bin",22254,11920],"p329":["images-809f9c62971a.bin",34174,7854],"p330":["images-809f9c62971a.bin",42028,9892],"p331":["images-fb386e7c4349.bin",0,13582],"p332":["images-fb386e7c4349.bin",13582,11274],"p333":["images-fb386e7c4349.bin",24856,10262],"p334":["images-fb386e7c4349.bin",35118,10324],"p335":["images-fb386e7c4349.bin",45442,11096],"p336":["images-d232e3faa3a7.bin",0,10100],"p337":["images-d232e3faa3a7.bin",10100,2774],"p338":["images-d232e3faa3a7.bin",12874,10098],"p339":["images-d232e3faa3a7.bin",22972,11116],"p340":["images-d232e3faa3a7.bin",34088,11402],"p341":["images-4f50c8660915.bin",0,10752],"p342":["images-4f50c8660915.bin",10752,11656],"p343":["images-4f50c8660915.bin",22408,11342],"p344":["images-4f50c8660915.bin",33750,11512],"p345":["images-4f50c8660915.bin",45262,10368],"p346":["images-a3d31c6019f8.bin",0,9542],"p347":["images-a3d31c6019f8.bin",9542,9826],"p348":["images-a3d31c6019f8.bin",19368,10672],"p349":["images-a3d31c6019f8.bin",30040,4720],"p350":["images-a3d31c6019f8.bin",34760,5436],"p351":["images-057fd6fdc9c1.bin",0,13802],"p352":["images-057fd6fdc9c1.bin",13802,4922],"p353":["images-057fd6fdc9c1.bin",18724,6008],"p367":["images-057fd6fdc9c1.bin",24732,11914],"p374":["images-057fd6fdc9c1.bin",36646,13612],"p375":["images-f8acd19ed307.bin",0,11310],"p376":["images-f8acd19ed307.bin",11310,11668],"p378":["images-f8acd19ed307.bin",22978,6296],"p379":["images-f8acd19ed307.bin",29274,12108]};
+const imagePacks = new Map();
+const bundledSources = new Map();
+async function bundledImage(id) {
+    if (!Object.hasOwn(bundledFiles, id)) return null;
+    if (bundledSources.has(id)) return bundledSources.get(id);
+    const [file, offset, size] = bundledFiles[id];
+    if (!imagePacks.has(file)) {
+        const request = fetch("./legends-assets/" + file).then(response => {
+            if (!response.ok) throw new Error("تعذّر تحميل صور المنتج");
+            return response.blob();
+        }).catch(error => {
+            imagePacks.delete(file);
+            throw error;
+        });
+        imagePacks.set(file, request);
+    }
+    const pack = await imagePacks.get(file);
+    if (!bundledSources.has(id)) {
+        bundledSources.set(id, URL.createObjectURL(pack.slice(offset, offset + size, "image/webp")));
+    }
+    return bundledSources.get(id);
+}
+
+// ===== قراءة المنتجات والصور من Supabase على دفعات =====
+let OFFERS_SUPPORTED = false;
+async function loadProductsFromDB() {
+    const fetchAll = async (query) => {
+        const out = [];
+        let batchSize = 250;
+        while (true) {
+            let batch;
+            try {
+                const res = await sbRequest(query + "&limit=" + batchSize + "&offset=" + out.length, { cache: "no-store" });
+                batch = await res.json();
+            } catch (e) {
+                const message = e instanceof Error ? e.message : String(e);
+                const canReduce = /مهلة|timeout|timed out|Failed to fetch|Load failed|NetworkError|network connection|^Supabase (413|500|502|503|504)\b/i.test(message);
+                if (!canReduce || batchSize === 1) throw e;
+                batchSize = Math.max(1, Math.floor(batchSize / 2));
+                continue;
+            }
+            if (!batch.length) break;
+            out.push(...batch);
+        }
+        return out;
+    };
+    const generation = ++fallbackGeneration;
+    currentFallbackIds = new Set();
+    fetchAll("products_norm?select=id&image_url=is.null&order=id.asc")
+        .then(rows => { if (generation === fallbackGeneration) currentFallbackIds = new Set(rows.map(row => row.id)); })
+        .catch(() => {});
+    let rows;
+    try {
+        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        OFFERS_SUPPORTED = true;
+    } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
+        if (!/42703|PGRST204/.test(message) || !/old_price|on_offer/.test(message)) throw e;
+        rows = await fetchAll("products_norm?select=id,name,category,price,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        OFFERS_SUPPORTED = false;
+    }
+    return rows.map(r => ({
+        id: r.id,
+        name: r.name,
+        category: r.category,
+        price: Number(r.price) || 0,
+        onOffer: !!r.on_offer,
+        oldPrice: Number(r.old_price) || 0,
+        variants: (r.variants || []).map(v => ({
+            size: v.size, color: v.color, stock: Number(v.stock) || 0
+        }))
+    }));
+}
+
+// تحميل الصورة عند ظهور بطاقة المنتج، بدون تأخير الكتالوج.
+let currentFallbackIds = new Set();
+let fallbackGeneration = 0;
+const productImages = new Map();
+function loadProductImage(id) {
+    if (!productImages.has(id)) {
+        const request = Promise.resolve(currentFallbackIds).then(async ids => {
+            if (ids.has(id)) return bundledImage(id);
+            const response = await sbRequest("products_norm?select=image_url&id=eq." + encodeURIComponent(id), { cache: "no-store" });
+            const rows = await response.json();
+            return (rows[0]?.image_url ?? bundledImage(id)) || null;
+        })
+            .catch(error => {
+                if (productImages.get(id) === request) productImages.delete(id);
+                throw error;
+            });
+        productImages.set(id, request);
+    }
+    return productImages.get(id);
+}
+
+function CatalogImage({ product, className, placeholder = null, eager = false }) {
+    const container = useRef(null);
+    const [loaded, setLoaded] = useState(null);
+    const { id, name, image } = product;
+    useEffect(() => {
+        if (image !== undefined) return;
+        let active = true;
+        const load = () => {
+            loadProductImage(id).then(value => {
+                if (active) setLoaded({ id, value });
+            }).catch(() => {});
+        };
+        let observer;
+        if (!eager && typeof IntersectionObserver === "function") {
+            observer = new IntersectionObserver(entries => {
+                if (!entries.some(entry => entry.isIntersecting)) return;
+                observer.disconnect();
+                load();
+            }, { rootMargin: "160px" });
+            if (container.current) observer.observe(container.current);
+        } else {
+            load();
+        }
+        return () => { active = false; observer?.disconnect(); };
+    }, [id, image, eager]);
+    const src = image === undefined ? (loaded?.id === id ? loaded.value : null) : image;
+    return React.createElement("div", { ref: container, className: src || placeholder || !eager ? className : "h-px w-full" },
+        src ? React.createElement("img", { src, alt: name, loading: eager ? "eager" : "lazy", decoding: "async", className: "w-full h-full", style: { objectFit: "inherit" } }) : placeholder);
+}
+
+// ===== خصم المخزون ذرياً عند الطلب =====
+async function deductStockAtomic(items) {
+    const payload = (items || []).map(i => ({
+        productId: i.productId, size: i.size, color: i.color, qty: Number(i.qty) || 0
+    }));
+    if (!payload.length) return;
+    await sbRequest("rpc/deduct_stock", {
+        method: "POST",
+        body: JSON.stringify({ p_items: payload })
+    });
+}
+
+// ===== إرجاع المخزون ذرياً عند الإلغاء =====
+async function restockAtomic(items) {
+    const payload = (items || []).map(i => ({
+        productId: i.productId, size: i.size, color: i.color, qty: Number(i.qty) || 0
+    }));
+    if (!payload.length) return;
+    await sbRequest("rpc/restock_items", {
+        method: "POST",
+        body: JSON.stringify({ p_items: payload })
+    });
+}
+
+// ===== حفظ/تعديل منتج واحد من لوحة التحكم (حمولة صغيرة) =====
+async function upsertProductDB(p) {
+    const isBundled = !!p.image && p.image === bundledSources.get(p.id);
+    await sbRequest("products_norm", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify([{
+            id: p.id, name: p.name, category: p.category,
+            price: Number(p.price) || 0,
+            ...(OFFERS_SUPPORTED ? { on_offer: !!p.onOffer, old_price: p.onOffer ? (Number(p.oldPrice) || null) : null } : {}),
+            image_url: isBundled ? null : (p.image || null)
+        }])
+    });
+    await sbRequest("variants?product_id=eq." + encodeURIComponent(p.id), { method: "DELETE" });
+    const vs = (p.variants || []).map(v => ({
+        product_id: p.id, size: v.size, color: v.color, stock: Number(v.stock) || 0
+    }));
+    if (vs.length) {
+        await sbRequest("variants", {
+            method: "POST",
+            headers: { Prefer: "return=minimal" },
+            body: JSON.stringify(vs)
+        });
+    }
+}
+
+async function updateProductDB(product, previous) {
+    const changes = {};
+    for (const field of ["name", "category", "price"]) {
+        if (product[field] !== previous[field]) changes[field] = product[field];
+    }
+    if (product.image !== previous.image) changes.image_url = product.image ?? "";
+    if (OFFERS_SUPPORTED) {
+        if (product.onOffer !== previous.onOffer) changes.on_offer = product.onOffer;
+        const oldPrice = product.onOffer ? product.oldPrice || null : null;
+        const previousPrice = previous.onOffer ? previous.oldPrice || null : null;
+        if (oldPrice !== previousPrice) changes.old_price = oldPrice;
+    }
+    const productFilter = "id=eq." + encodeURIComponent(product.id);
+    if (Object.keys(changes).length) {
+        const response = await sbRequest("products_norm?" + productFilter + "&select=id", {
+            method: "PATCH",
+            headers: { Prefer: "return=representation" },
+            body: JSON.stringify(changes)
+        });
+        if (!(await response.json()).length) throw new Error("قاعدة البيانات ما أكدت حفظ المنتج");
+    }
+
+    const keyOf = variant => JSON.stringify([variant.size, variant.color]);
+    const before = new Map((previous.variants || []).map(v => [keyOf(v), v]));
+    const after = new Set(product.variants.map(keyOf));
+    const updates = product.variants.filter(v => before.get(keyOf(v))?.stock !== v.stock);
+    if (updates.length) {
+        await sbRequest("variants?on_conflict=product_id,size,color", {
+            method: "POST",
+            headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+            body: JSON.stringify(updates.map(v => ({ product_id: product.id, size: v.size, color: v.color, stock: v.stock })))
+        });
+    }
+    for (const [key, variant] of before) {
+        if (after.has(key)) continue;
+        const query = "variants?product_id=eq." + encodeURIComponent(product.id)
+            + "&size=eq." + encodeURIComponent(variant.size)
+            + "&color=eq." + encodeURIComponent(variant.color);
+        await sbRequest(query, { method: "DELETE" });
+    }
+}
+
+async function deleteProductDB(id) {
+    await sbRequest("products_norm?id=eq." + encodeURIComponent(id), { method: "DELETE" });
+}
+
+// ===== الطلبات: تبقى صفاً واحداً (حجمها بالكيلوبايت) =====
+window.storage = {
+    async get(key, shared = false) {
+        if (key === "products") {
+            return { key, value: JSON.stringify(await loadProductsFromDB()), shared };
+        }
+        if (key === "orders") {
+            const res = await sbRequest("orders_v2?select=data&order=created_at.desc");
+            const rows = await res.json();
+            return { key, value: JSON.stringify(rows.map(r => r.data)), shared };
+        }
+        throw new Error("key not found");
+    },
+    async set(key, value, shared = false) {
+        if (key === "products") return { key, value, shared };
+        throw new Error("write not supported");
+    },
+    async delete(key, shared = false) { throw new Error("delete not supported"); },
+    async list() { return { keys: [] }; },
+};
+// ===== إنشاء طلب (للزوار): التحقق والخصم وحساب السعر كلها على الخادم =====
+async function placeOrderDB(order) {
+    const res = await sbRequest("rpc/place_order", {
+        method: "POST",
+        body: JSON.stringify({ p_order: {
+            customerName: order.customerName, phone: order.phone, city: order.city, notes: order.notes,
+            items: order.items.map(i => ({ productId: i.productId, size: i.size, color: i.color, qty: i.qty }))
+        } })
+    });
+    return res.json();
+}
+// ===== تغيير حالة الطلب (للمدير فقط) + إرجاع المخزون عند الإلغاء =====
+async function updateOrderStatusDB(id, status) {
+    const res = await sbRequest("rpc/update_order_status", {
+        method: "POST", body: JSON.stringify({ p_id: id, p_status: status })
+    });
+    return res.json();
+}
+/* ============ ثوابت العلامة التجارية ============ */
+const STORE_NAME = "LEGENDS_STYLE";
+const STORE_TAGLINE = "أساطير الملعب تلبس هنا";
+const LEGACY_PLAYER_CATEGORIES = ["نسخة اللاعبين 26", "نسخة اللاعبين 27"];
+function displayCategory(category) {
+    return LEGACY_PLAYER_CATEGORIES.includes(category) ? "نسخة اللاعبين" : category;
+}
+const CATEGORIES = ["نسخة اللاعبين", "الأوفر سايز", "أطقم تدريب قصيرة", "أطقم تدريب طويلة", "قمصان أكمام طويلة", "أحذية وإكسسوارات", "صيفي", "كاچوال", "كلاسيك", "أطفال", "نسائي"];
+const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "20", "22", "24", "26", "28", "39", "40", "41", "42", "43", "44"];
+const LOW_STOCK = 3;
+const STORE_WHATSAPP = "96877116435";
+const STORE_EMAIL = "Balhbsy504@gmail.com"; // غيّرها لرقم واتساب متجرك الفعلي
+const GENDERS = ["رجال", "نساء", "أطفال"];
+// تصنيف الأقسام حسب الفئة — عدّلها متى ما تبي
+const GENDER_MAP = {
+    "نسائي": "نساء",
+    "أطفال": "أطفال",
+};
+function genderOf(category) {
+    return GENDER_MAP[category] || "رجال";
+}
+// ===== صفحات الصفحة الرئيسية (الأقسام الرئيسية) =====
+const LANDING_PAGES = ["رجال", "نساء", "أطفال", "عروض"];
+// ===== أقسام داخل كل صفحة: عدّلها متى ما تبي (اسم القسم + الأقسام اللي يجمعها) =====
+const SECTIONS = {
+    "رجال": [
+        {
+            "name": "نسخة اللاعبين",
+            "cats": [
+                "نسخة اللاعبين",
+                ...LEGACY_PLAYER_CATEGORIES,
+                "نسخة خاصة"
+            ]
+        },
+        {
+            "name": "الأوفر سايز",
+            "cats": [
+                "الأوفر سايز",
+                "أوفر سايز",
+                "نسخة الجماهير"
+            ]
+        },
+        {
+            "name": "أطقم تدريب قصيرة",
+            "cats": [
+                "أطقم تدريب قصيرة"
+            ]
+        },
+        {
+            "name": "أطقم تدريب طويلة",
+            "cats": [
+                "أطقم تدريب طويلة"
+            ]
+        },
+        {
+            "name": "قمصان أكمام طويلة",
+            "cats": [
+                "قمصان أكمام طويلة",
+                "أكمام طويلة"
+            ]
+        },
+        {
+            "name": "أحذية وإكسسوارات",
+            "cats": [
+                "أحذية وإكسسوارات",
+                "أحذية",
+                "إكسسوارات"
+            ]
+        },
+        {
+            "name": "صيفي",
+            "cats": [
+                "صيفي"
+            ]
+        },
+        {
+            "name": "كاچوال",
+            "cats": [
+                "كاچوال",
+                "كاجوال",
+                "شورتات"
+            ]
+        },
+        {
+            "name": "كلاسيك",
+            "cats": [
+                "كلاسيك"
+            ]
+        }
+    ]
+};
+const MEN_SECTION_COVERS = {
+    "الكل": "./legends-assets/cover-01.webp",
+    "نسخة اللاعبين": "./legends-assets/cover-02.webp",
+    "الأوفر سايز": "./legends-assets/cover-03.webp",
+    "أطقم تدريب قصيرة": "./legends-assets/cover-04.webp",
+    "أطقم تدريب طويلة": "./legends-assets/cover-05.webp",
+    "قمصان أكمام طويلة": "./legends-assets/cover-06.webp",
+    "أحذية وإكسسوارات": "./legends-assets/cover-07.webp",
+    "صيفي": "./legends-assets/cover-08.webp",
+    "كاچوال": "./legends-assets/cover-09.webp",
+    "كلاسيك": "./legends-assets/cover-10.webp"
+};
+const GENDER_TAGLINE = {
+    "عروض": "خصومات على قطع مختارة · لفترة محدودة",
+    "رجال": "قمصان الأندية والمنتخبات · ملابس الملاعب",
+    "نساء": "تشكيلة نسائية رياضية بلمسة أنيقة",
+    "أطفال": "نجوم المستقبل يلبسون هنا",
+};
+const CATEGORY_COLOR = {
+    "قمصان الأندية": { bg: "bg-[#2C332C]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "قمصان المنتخبات": { bg: "bg-[#34301F]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "ملابس تدريب": { bg: "bg-[#2B3128]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "نسخة الجماهير": { bg: "bg-[#342A2A]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "نسخة اللاعبين 26": { bg: "bg-[#282C34]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "نسخة اللاعبين 27": { bg: "bg-[#2E2A34]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "نسخة خاصة": { bg: "bg-[#312A33]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "صيفي": { bg: "bg-[#362E24]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "أكمام طويلة": { bg: "bg-[#26303A]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "كلاسيك": { bg: "bg-[#302D28]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "شورتات": { bg: "bg-[#243230]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "أطفال": { bg: "bg-[#362B29]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "نسائي": { bg: "bg-[#342830]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+    "ملابس رياضية": { bg: "bg-[#2F2C29]", text: "text-[#A8A29A]", ring: "ring-[#3A3632]" },
+};
+
+const fmt = (n) => `${n} ر.ع.`;
+const genId = (p) => `${p}_${Date.now()}_${Math.floor(Math.random() * 9999)}`;
+const totalStock = (product) => product.variants.reduce((s, v) => s + v.stock, 0);
+/* ============ الخط والأنماط العامة ============ */
+function GlobalStyle() {
+    return (React.createElement("style", null, `
+      @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;800;900&family=Tajawal:wght@400;500;700&display=swap');
+      .font-display { font-family: 'Cairo', sans-serif; }
+      .font-body { font-family: 'Tajawal', sans-serif; }
+    `));
+}
+/* ============ شارة عدد قليل بالمخزون ============ */
+function StockBadge({ stock }) {
+    if (stock <= 0)
+        return React.createElement("span", { className: "text-xs font-body px-2 py-0.5 rounded-full bg-[#3A1D1D] text-[#F0A0A0] ring-1 ring-[#5A2A2A]" }, "\u0646\u0641\u0630");
+    // آخر قطعة فقط: نُظهر تنبيهاً يخلق إلحاحاً حقيقياً
+    if (stock === 1)
+        return React.createElement("span", { className: "text-xs font-body px-2 py-0.5 rounded-full bg-[#3E3312] text-[#C9A227] ring-1 ring-[#5A4A1C]" }, "\u0622\u062E\u0631 \u0642\u0637\u0639\u0629");
+    // أي كمية أكبر: نكتفي بـ"متوفر" دون كشف العدد
+    return React.createElement("span", { className: "text-xs font-body px-2 py-0.5 rounded-full bg-[#1E3A2C] text-[#6EE7A8] ring-1 ring-[#2C5540]" }, "\u0645\u062A\u0648\u0641\u0631");
+}
+/* ============ بطاقة منتج (بستايل رقم القميص) ============ */
+function ProductCard({ product, onOpen }) {
+    const colors = CATEGORY_COLOR[product.category] || CATEGORY_COLOR["ملابس رياضية"];
+    const stock = totalStock(product);
+    return (React.createElement("button", { onClick: () => onOpen(product), className: "group text-right bg-[#2A2724] rounded-2xl overflow-hidden ring-1 ring-[#3A3632] hover:ring-[#5A544C] transition-all" },
+        React.createElement("div", { className: `relative h-56 sm:h-64 ${colors.bg} flex items-center justify-center overflow-hidden` },
+            React.createElement(CatalogImage, { product, className: "w-full h-full object-contain p-2 flex items-center justify-center transition-transform duration-500 group-hover:scale-105",
+                placeholder: React.createElement("span", { className: "font-display font-black text-[#F5F3F0]/10 text-8xl select-none" }, product.name.slice(0, 2)) }),
+            product.onOffer && React.createElement("span", { className: "absolute top-3 left-3 text-[11px] font-body font-bold px-2 py-1 rounded-full bg-[#C9A227] text-[#22201E]" }, product.oldPrice > product.price ? "عرض −" + Math.round((1 - product.price / product.oldPrice) * 100) + "%" : "عرض"),
+            React.createElement("span", { className: "absolute top-3 right-3 text-[11px] font-body px-2 py-1 rounded-full bg-[#1A1815]/70 text-[#E7E3DE]" }, displayCategory(product.category))),
+        React.createElement("div", { className: "p-4 space-y-2" },
+            React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] leading-snug" }, product.name),
+            React.createElement("div", { className: "flex items-center justify-between" },
+                product.price > 0
+                    ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-lg" }, fmt(product.price), product.onOffer && product.oldPrice > product.price && React.createElement("span", { className: "mr-2 text-sm text-[#8A847B] line-through font-body" }, fmt(product.oldPrice)))
+                    : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-0.5 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F"),
+                React.createElement(StockBadge, { stock: stock })))));
+}
+/* ============ مودال تفاصيل المنتج + إضافة للسلة ============ */
+function ProductModal({ product, cart, onClose, onAddToCart }) {
+    var _a;
+    const sizes = [...new Set(product.variants.map(v => v.size))];
+    const [size, setSize] = useState(sizes[0]);
+    const colorsForSize = product.variants.filter(v => v.size === size);
+    const [color, setColor] = useState((_a = colorsForSize[0]) === null || _a === void 0 ? void 0 : _a.color);
+    useEffect(() => {
+        var _a;
+        const cs = product.variants.filter(v => v.size === size);
+        setColor((_a = cs[0]) === null || _a === void 0 ? void 0 : _a.color);
+    }, [size]);
+    const variant = product.variants.find(v => v.size === size && v.color === color);
+    const stock = variant ? variant.stock : 0;
+    const inCart = (cart || []).filter(i => i.productId === product.id && i.size === size && i.color === color).reduce((s, i) => s + i.qty, 0);
+    const available = Math.max(0, stock - inCart);
+    const [qty, setQty] = useState(1);
+    useEffect(() => { setQty(1); }, [size, color]);
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
+                React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, product.name),
+                React.createElement("button", { onClick: onClose, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
+                    React.createElement(X, { size: 20 }))),
+            React.createElement("div", { className: "p-4 space-y-4" },
+                React.createElement(CatalogImage, { key: product.id, product, eager: true, className: "w-full h-[22rem] sm:h-[26rem] object-contain rounded-xl bg-[#332F2B] p-3" }),
+                React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement("span", { className: "text-[#A8A29A] text-sm" }, displayCategory(product.category)),
+                    product.price > 0
+                        ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-xl" }, fmt(product.price), product.onOffer && product.oldPrice > product.price && React.createElement("span", { className: "mr-2 text-sm text-[#8A847B] line-through font-body" }, fmt(product.oldPrice)))
+                        : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-1 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F \u0628\u0639\u062F")),
+                React.createElement("div", null,
+                    React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0645\u0642\u0627\u0633"),
+                    React.createElement("div", { className: "flex gap-2 flex-wrap" }, sizes.map(s => (React.createElement("button", { key: s, onClick: () => setSize(s), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${size === s ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, s))))),
+                colorsForSize.length > 1 && (React.createElement("div", null,
+                    React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0644\u0648\u0646"),
+                    React.createElement("div", { className: "flex gap-2 flex-wrap" }, colorsForSize.map(v => (React.createElement("button", { key: v.color, onClick: () => setColor(v.color), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${color === v.color ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, v.color)))))),
+                React.createElement("div", { className: "flex items-center justify-between" },
+                    React.createElement(StockBadge, { stock: available }),
+                    React.createElement("div", { className: "flex items-center gap-3" },
+                        React.createElement("button", { disabled: qty <= 1, onClick: () => setQty(q => q - 1), className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#E7E3DE] disabled:opacity-30 flex items-center justify-center" },
+                            React.createElement(Minus, { size: 16 })),
+                        React.createElement("span", { className: "w-6 text-center font-bold text-[#F5F3F0]" }, qty),
+                        React.createElement("button", { disabled: qty >= available, onClick: () => setQty(q => q + 1), className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#E7E3DE] disabled:opacity-30 flex items-center justify-center" },
+                            React.createElement(Plus, { size: 16 })))),
+                inCart > 0 && React.createElement("p", { className: "text-xs text-[#8A847B] -mt-2" }, `\u0639\u0646\u062F\u0643 \u0628\u0627\u0644\u0633\u0644\u0629 \u0628\u0627\u0644\u0641\u0639\u0644: ${inCart}`),
+                React.createElement("button", { disabled: available <= 0 || !(product.price > 0), onClick: () => { onAddToCart({ productId: product.id, name: product.name, size, color, price: product.price, qty }); onClose(); }, className: "w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold transition-colors" }, !(product.price > 0) ? "السعر غير محدد بعد" : available <= 0 ? "نفذ من المخزون" : "أضف للسلة")))));
+}
+/* ============ سلة المشتريات ============ */
+function CartModal({ cart, products, onClose, onUpdateQty, onRemove, onCheckout }) {
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const stockFor = (item) => {
+        const p = (products || []).find(p => p.id === item.productId);
+        const v = p && p.variants.find(v => v.size === item.size && v.color === item.color);
+        return v ? v.stock : 0;
+    };
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body max-h-[85vh] flex flex-col", onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
+                React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, "\u0633\u0644\u0629 \u0627\u0644\u0645\u0634\u062A\u0631\u064A\u0627\u062A"),
+                React.createElement("button", { onClick: onClose, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
+                    React.createElement(X, { size: 20 }))),
+            React.createElement("div", { className: "p-4 space-y-3 overflow-y-auto flex-1" },
+                cart.length === 0 && React.createElement("p", { className: "text-[#8A847B] text-center py-8" }, "\u0627\u0644\u0633\u0644\u0629 \u0641\u0627\u0631\u063A\u0629"),
+                cart.map((item, idx) => (React.createElement("div", { key: idx, className: "flex items-center justify-between bg-[#332F2B] rounded-xl p-3" },
+                    React.createElement("div", null,
+                        React.createElement("p", { className: "font-bold text-[#F5F3F0] text-sm" }, item.name),
+                        React.createElement("p", { className: "text-xs text-[#A8A29A]" },
+                            item.size,
+                            " \u00B7 ",
+                            item.color,
+                            " \u00B7 ",
+                            fmt(item.price))),
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                        React.createElement("button", { onClick: () => onUpdateQty(idx, item.qty - 1), className: "w-7 h-7 rounded-lg bg-[#3A3632] text-[#E7E3DE] flex items-center justify-center" },
+                            React.createElement(Minus, { size: 14 })),
+                        React.createElement("span", { className: "w-5 text-center text-sm text-[#F5F3F0]" }, item.qty),
+                        React.createElement("button", { disabled: item.qty >= stockFor(item), onClick: () => onUpdateQty(idx, item.qty + 1), className: "w-7 h-7 rounded-lg bg-[#3A3632] text-[#E7E3DE] disabled:opacity-30 flex items-center justify-center" },
+                            React.createElement(Plus, { size: 14 })),
+                        React.createElement("button", { onClick: () => onRemove(idx), className: "w-7 h-7 rounded-lg bg-[#3A1D1D] text-[#F0A0A0] flex items-center justify-center mr-1" },
+                            React.createElement(Trash2, { size: 14 }))))))),
+            cart.length > 0 && (React.createElement("div", { className: "p-4 border-t border-[#3A3632] space-y-3" },
+                React.createElement("div", { className: "flex items-center justify-between font-display font-bold text-lg" },
+                    React.createElement("span", { className: "text-[#C4BDB4]" }, "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A"),
+                    React.createElement("span", { className: "text-[#C9A227]" }, fmt(total))),
+                React.createElement("button", { onClick: onCheckout, className: "w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white text-[#22201E] font-display font-bold" }, "\u0625\u062A\u0645\u0627\u0645 \u0627\u0644\u0637\u0644\u0628"))))));
+}
+/* ============ نموذج إتمام الطلب ============ */
+function CheckoutModal({ cart, onClose, onSubmit }) {
+    const [form, setForm] = useState({ name: "", phone: "", city: "", delivery: "", notes: "" });
+    const total = cart.reduce((s, i) => s + i.price * i.qty, 0);
+    const phone = form.phone.trim()
+        .replace(/[٠-٩۰-۹]/g, digit => String(digit.charCodeAt(0) & 15))
+        .replace(/[\s-]/g, "");
+    const validPhone = /^(?:\+968|00968)?[79][0-9]{7}$/.test(phone);
+    const city = form.city.trim();
+    const canSubmit = Boolean(form.name.trim() && validPhone && city && form.delivery);
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
+                React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, "\u0628\u064A\u0627\u0646\u0627\u062A \u0627\u0644\u062A\u0648\u0635\u064A\u0644"),
+                React.createElement("button", { onClick: onClose, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
+                    React.createElement(X, { size: 20 }))),
+            React.createElement("div", { className: "p-4 space-y-3" },
+                React.createElement("input", { placeholder: "\u0627\u0644\u0627\u0633\u0645 \u0627\u0644\u0643\u0627\u0645\u0644", value: form.name, onChange: e => setForm({ ...form, name: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                React.createElement("input", { placeholder: "\u0631\u0642\u0645 \u0627\u0644\u062C\u0648\u0627\u0644", type: "tel", autoComplete: "tel", value: form.phone, onChange: e => setForm({ ...form, phone: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                React.createElement("input", { placeholder: "\u0627\u0644\u0645\u062F\u064A\u0646\u0629 / \u0627\u0644\u0639\u0646\u0648\u0627\u0646", value: form.city, onChange: e => setForm({ ...form, city: e.target.value }), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                form.phone.trim() && !validPhone && React.createElement("p", { className: "text-sm text-[#F2B8B8]" }, "أدخل رقم جوال عُماني صحيح من ٨ أرقام، ويمكنك إضافة ‎+968."),
+                !city && React.createElement("p", { className: "text-xs text-[#C4BDB4]" }, "المدينة أو العنوان مطلوب لإتمام الطلب."),
+                React.createElement("label", { className: "block space-y-1 text-sm text-[#C4BDB4]" },
+                    React.createElement("span", null, "توصيل للمكتب / للمنزل"),
+                    React.createElement("select", {
+                        value: form.delivery,
+                        onChange: e => setForm({ ...form, delivery: e.target.value }),
+                        className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none focus:ring-2 ring-[#5A544C]"
+                    },
+                        React.createElement("option", { value: "", disabled: true }, "اختر مكان التوصيل"),
+                        React.createElement("option", { value: "المكتب" }, "المكتب"),
+                        React.createElement("option", { value: "المنزل" }, "المنزل"))),
+                React.createElement("textarea", { placeholder: "\u0645\u0644\u0627\u062D\u0638\u0627\u062A (\u0627\u062E\u062A\u064A\u0627\u0631\u064A)", value: form.notes, onChange: e => setForm({ ...form, notes: e.target.value }), rows: 2, className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none focus:ring-2 ring-[#5A544C]" }),
+                React.createElement("div", { className: "flex items-center justify-between font-display font-bold pt-2" },
+                    React.createElement("span", { className: "text-[#C4BDB4]" }, "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A"),
+                    React.createElement("span", { className: "text-[#C9A227] text-lg" }, fmt(total))),
+                React.createElement("button", { disabled: !canSubmit, onClick: () => onSubmit({ ...form, name: form.name.trim(), phone, city }), className: "w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, "\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0637\u0644\u0628")))));
+}
+/* ============ تأكيد الطلب ============ */
+function OrderSuccessModal({ order, onClose }) {
+    const waText = encodeURIComponent([
+        `*LEGENDS | طلب جديد رقم ${order.id.slice(-5).replace(/^_/, "")}*`,
+        "",
+        "*بيانات الطلب*",
+        `الاسم: ${order.customerName}`,
+        `الرقم: ${order.phone}`,
+        `المدينة: ${order.city || "—"}`,
+        `توصيل للمكتب / للمنزل: ${order.delivery}`,
+        "",
+        "*تفاصيل الطلب*",
+        ...order.items.map(item =>
+            `${item.name} | المقاس: ${item.size} | الخيار: ${item.color ?? "عادي"} | الكمية: ${item.qty}`),
+        "",
+        `*إجمالي الطلب: ${Number(order.total).toFixed(3)} ر.ع.*`,
+    ].join("\n"));
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-sm w-full ring-1 ring-[#5A544C] p-6 text-center font-body space-y-4" },
+            React.createElement("div", { className: "w-14 h-14 rounded-full bg-[#F5F3F0] flex items-center justify-center mx-auto" },
+                React.createElement(Check, { className: "text-[#F5F3F0]", size: 28 })),
+            React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-xl" }, "\u062A\u0645 \u0627\u0633\u062A\u0644\u0627\u0645 \u0637\u0644\u0628\u0643!"),
+            React.createElement("p", { className: "text-[#A8A29A] text-sm" },
+                "\u0631\u0642\u0645 \u0627\u0644\u0637\u0644\u0628 ",
+                React.createElement("span", { className: "text-[#C9A227] font-bold" },
+                    "#",
+                    order.id.slice(-5))),
+            React.createElement("a", { href: `https://wa.me/${STORE_WHATSAPP}?text=${waText}`, target: "_blank", rel: "noreferrer", className: "block w-full py-3 rounded-xl bg-[#F5F3F0] hover:bg-white text-[#22201E] font-bold" }, "\u062A\u0623\u0643\u064A\u062F \u0627\u0644\u0637\u0644\u0628 \u0639\u0628\u0631 \u0648\u0627\u062A\u0633\u0627\u0628"),
+            React.createElement("button", { onClick: onClose, className: "block w-full py-3 rounded-xl bg-[#332F2B] text-[#E7E3DE] font-bold" }, "\u0645\u062A\u0627\u0628\u0639\u0629 \u0627\u0644\u062A\u0633\u0648\u0642"))));
+}
+/* ============ واجهة المتجر ============ */
+function useReveal() {
+    useEffect(() => {
+        const els = Array.from(document.querySelectorAll(".rv"));
+        if (!("IntersectionObserver" in window)) {
+            els.forEach(el => el.classList.add("rv-in"));
+            return;
+        }
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach(en => {
+                if (en.isIntersecting) {
+                    en.target.classList.add("rv-in");
+                    io.unobserve(en.target);
+                }
+            });
+        }, { threshold: 0.16, rootMargin: "0px 0px -8% 0px" });
+        els.forEach(el => io.observe(el));
+        return () => io.disconnect();
+    }, []);
+}
+
+function GenderCards({ products, onPick }) {
+    const counts = useMemo(() => {
+        const m = {};
+        for (const g of LANDING_PAGES) m[g] = 0;
+        for (const p of products) {
+            const g = genderOf(p.category);
+            if (m[g] !== undefined) m[g] += 1;
+            if (p.onOffer) m["عروض"] += 1;
+        }
+        return m;
+    }, [products]);
+
+    const CARD = {
+        "رجال": { grad: "from-[#DCE6D8] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "نساء": { grad: "from-[#EBDCE5] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "أطفال": { grad: "from-[#EEE2CC] to-transparent", ring: "hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+        "عروض": { grad: "from-[#EBD79A] to-transparent", ring: "ring-[#C9A227]/60 hover:ring-[#C9A227]", accent: "text-[#9A7B12]" },
+    };
+
+    return React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-4 w-full max-w-4xl mx-auto" },
+        LANDING_PAGES.map((g, i) => {
+            const st = CARD[g];
+            return React.createElement("button", {
+                key: g,
+                onClick: () => onPick(g),
+                className: `rv rv-d${i + 1} group relative overflow-hidden rounded-2xl ring-1 ring-[#E2D8C4] ${st.ring} bg-white/70 backdrop-blur-sm shadow-sm px-6 py-10 transition-all duration-300 hover:-translate-y-1`
+            },
+                React.createElement("div", { className: `absolute inset-0 bg-gradient-to-br ${st.grad} opacity-60 group-hover:opacity-100 transition-opacity` }),
+                React.createElement("div", { className: "relative" },
+                    React.createElement("span", { className: "block font-display font-black text-3xl md:text-4xl text-[#2A2420]" }, g),
+                    React.createElement("span", { className: `block font-body text-xs mt-2 ${st.accent}` }, `${counts[g] || 0} منتج`),
+                    React.createElement("span", { className: "block font-body text-[11px] mt-4 text-[#7A7368] group-hover:text-[#2A2420] transition-colors" }, "تصفّح الآن ←")
+                )
+            );
+        })
+    );
+}
+
+function LandingView({ products, onPick }) {
+    useReveal();
+
+    const STATS = [
+        { n: `${products.length}+`, l: "قطعة متوفرة" },
+        { n: "١٠٠٪", l: "جودة مضمونة" },
+        { n: "عُمان", l: "توصيل داخل السلطنة" },
+    ];
+
+    // صور مربعات "قصتنا" (بالترتيب 01، 02، 03) — غيّر الاسم أو موضع القص من هنا
+    const STORY_IMAGES = [
+        { src: "about-bg.jpg", pos: "center 55%" },
+        { src: "about-bg2.jpg", pos: "center 35%" },
+        { src: "about-bg3.jpg", pos: "center 55%" },
+    ];
+    const STORY = [
+        {
+            t: "بدأنا من شغف",
+            d: "legends_style ما بدأ كمشروع تجاري، بدأ كحب لكرة القدم ولقميص يحمل ذكرى مباراة، هدف، أو لاعب صار أسطورة."
+        },
+        {
+            t: "نختار بعناية",
+            d: "كل قطعة تمر علينا قبل ما توصلك — خامة، طباعة، ومقاسات مضبوطة. ما نبيع إلا اللي نلبسه بأنفسنا."
+        },
+        {
+            t: "قريبين منك",
+            d: "طلبك يوصلك داخل السلطنة، وتقدر تتواصل معنا مباشرة على واتساب بأي وقت — بدون تعقيد وبدون وسطاء."
+        },
+    ];
+
+    return React.createElement("div", { className: "relative bg-[#F5F1EA]" },
+
+        // ===== 1) القسم الأول: الواجهة المتحركة =====
+        React.createElement("section", { className: "relative min-h-screen overflow-hidden flex flex-col items-center justify-center px-5 text-center" },
+            React.createElement("div", { className: "ls-stage" },
+                React.createElement("div", { className: "ls-orb ls-orb-a" }),
+                React.createElement("div", { className: "ls-orb ls-orb-b" }),
+                React.createElement("div", { className: "ls-orb ls-orb-c" }),
+                React.createElement("div", { className: "ls-grid" }),
+                React.createElement("div", { className: "ls-sweep" })
+            ),
+            React.createElement("div", { className: "ls-video-wrap" },
+                React.createElement("video", {
+                    className: "ls-video",
+                    src: "hero.mp4",
+                    autoPlay: true,
+                    muted: true,
+                    loop: true,
+                    playsInline: true,
+                    controls: false,
+                    preload: "auto",
+                    tabIndex: -1,
+                    "aria-hidden": "true",
+                    disablePictureInPicture: true,
+                    controlsList: "nodownload noplaybackrate nofullscreen",
+                    ref: (el) => {
+                        if (!el) return;
+                        el.muted = true;                       // لازم للتشغيل التلقائي في iOS
+                        const go = () => { const p = el.play(); if (p && p.catch) p.catch(() => {}); };
+                        go();
+                        el.addEventListener("canplay", go, { once: true });
+                        document.addEventListener("visibilitychange", () => { if (!document.hidden) go(); });
+                    }
+                })
+            ),
+            React.createElement("div", { className: "ls-video-shield" }),
+            React.createElement("div", { className: "ls-video-veil" }),
+            React.createElement("div", { className: "relative z-10 ls-rise" },
+                React.createElement("h1", { className: "font-display font-black text-[#2A2420] text-5xl md:text-7xl tracking-tight" },
+                    "LEGENDS",
+                    React.createElement("span", { className: "text-[#C9A227]" }, "_"),
+                    "STYLE"),
+                React.createElement("p", { className: "font-body text-[#6B6358] mt-3 text-base md:text-lg" }, STORE_TAGLINE),
+                React.createElement("div", { className: "mx-auto mt-5 h-px w-28 bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent" })
+            ),
+            React.createElement("div", { className: "relative z-10 grid grid-cols-3 gap-5 md:gap-10 mt-12 ls-rise ls-d2" },
+                STATS.map((s, i) => React.createElement("div", { key: i, className: "text-center" },
+                    React.createElement("div", { className: "font-display font-black text-xl md:text-3xl text-[#2A2420]" }, s.n),
+                    React.createElement("div", { className: "font-body text-[11px] md:text-xs text-[#7A7368] mt-1" }, s.l)
+                ))
+            ),
+            React.createElement("div", { className: "absolute bottom-8 left-0 right-0 z-10 flex flex-col items-center gap-2 ls-rise ls-d5" },
+                React.createElement("span", { className: "font-body text-[11px] text-[#7A7368] tracking-widest" }, "انزل للأسفل"),
+                React.createElement("div", { className: "ls-mouse" }, React.createElement("div", { className: "ls-wheel" }))
+            )
+        ),
+
+        // ===== 2) القسم الثاني: قصتنا =====
+        React.createElement("section", { className: "relative px-5 py-24 md:py-32 max-w-5xl mx-auto" },
+            React.createElement("div", { className: "text-center mb-14" },
+                React.createElement("p", { className: "rv font-body text-[#9A7B12] text-xs tracking-[0.3em] mb-3" }, "من نحن"),
+                React.createElement("h2", { className: "rv rv-d1 font-display font-black text-[#2A2420] text-3xl md:text-5xl leading-tight" }, "قصتنا"),
+                React.createElement("div", { className: "rv rv-d2 mx-auto mt-5 h-px w-20 bg-gradient-to-r from-transparent via-[#C9A227]/60 to-transparent" })
+            ),
+            React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-3 gap-5" },
+                STORY.map((s, i) => React.createElement("div", {
+                    key: i,
+                    className: `rv rv-d${i + 1} relative overflow-hidden rounded-2xl ring-1 ring-[#C9A227]/40 min-h-[360px] md:min-h-[420px] flex flex-col justify-end transition-all hover:ring-[#C9A227]`,
+                    style: { backgroundImage: `url(${STORY_IMAGES[i].src})`, backgroundSize: "cover", backgroundPosition: STORY_IMAGES[i].pos }
+                },
+                    React.createElement("div", { className: "absolute inset-0 bg-gradient-to-t from-[#14110F]/95 via-[#14110F]/62 to-[#14110F]/8" }),
+                    React.createElement("div", { className: "relative p-7" },
+                        React.createElement("div", { className: "font-display font-black text-5xl text-[#C9A227]/75 leading-none mb-4" }, `0${i + 1}`),
+                        React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] text-lg mb-3" }, s.t),
+                        React.createElement("p", { className: "font-body text-sm text-[#E4DED4] leading-relaxed" }, s.d))
+                ))
+            )
+        ),
+
+        // ===== 3) القسم الثالث: اختيار القسم =====
+        React.createElement("section", { className: "relative px-5 pb-28 pt-4 md:pt-10" },
+            React.createElement("div", { className: "ls-glow" }),
+            React.createElement("div", { className: "relative max-w-5xl mx-auto text-center" },
+                React.createElement("h2", { className: "rv font-display font-black text-[#2A2420] text-3xl md:text-5xl" }, "وش تدوّر عليه؟"),
+                React.createElement("p", { className: "rv rv-d1 font-body text-[#7A7368] text-sm mt-3 mb-12" }, "اختر القسم وابدأ التصفّح"),
+                React.createElement(GenderCards, { products: products, onPick: onPick }),
+                React.createElement("div", { className: "rv rv-d4 font-body text-xs text-[#6B6358] mt-16 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
+                    React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#2A2420]" },
+                        "واتساب: ",
+                        React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
+                    React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#2A2420]" }, STORE_EMAIL)
+                )
+            )
+        )
+    );
+}
+
+function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refreshProducts, gender, onBack }) {
+    const [search, setSearch] = useState("");
+    const [category, setCategory] = useState(gender === "رجال" ? null : "الكل");
+    const [openProduct, setOpenProduct] = useState(null);
+    const [showCart, setShowCart] = useState(false);
+    const [showCheckout, setShowCheckout] = useState(false);
+    const [successOrder, setSuccessOrder] = useState(null);
+    const genderProducts = useMemo(() => gender === "عروض" ? products.filter(p => p.onOffer) : products.filter(p => genderOf(p.category) === gender), [products, gender]);
+    const filters = useMemo(() => {
+        const secs = SECTIONS[gender] || [];
+        const covered = new Set(secs.flatMap(sc => sc.cats));
+        const rest = [...new Set(genderProducts.map(p => p.category))].filter(c => !covered.has(c)).map(c => ({ label: c, cats: [c] }));
+        return [...secs.map(sc => ({ label: sc.name, cats: sc.cats })), ...rest];
+    }, [genderProducts, gender]);
+    useEffect(() => { setCategory(gender === "رجال" ? null : "الكل"); setSearch(""); }, [gender]);
+    const showMenSections = gender === "رجال" && category === null;
+    const sectionCover = gender === "رجال" && category !== "الكل" && MEN_SECTION_COVERS[category];
+    const chooseMenSection = (section) => {
+        setCategory(section);
+        setSearch("");
+        window.scrollTo(0, 0);
+    };
+    const filtered = useMemo(() => {
+        const cur = filters.find(f => f.label === category);
+        return genderProducts.filter(p => (category === "الكل" || (cur && cur.cats.includes(p.category))) &&
+            p.name.includes(search.trim()));
+    }, [genderProducts, search, category, filters]);
+    const addToCart = (item) => {
+        setCart(prev => {
+            const idx = prev.findIndex(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
+            if (idx >= 0) {
+                const copy = [...prev];
+                copy[idx].qty += item.qty;
+                return copy;
+            }
+            return [...prev, item];
+        });
+    };
+    const updateQty = (idx, qty) => {
+        setCart(prev => {
+            if (qty <= 0)
+                return prev.filter((_, i) => i !== idx);
+            const copy = [...prev];
+            copy[idx].qty = qty;
+            return copy;
+        });
+    };
+    const removeItem = (idx) => setCart(prev => prev.filter((_, i) => i !== idx));
+    const submitOrder = async (form) => {
+        let placedOrder = null;
+        const order = {
+            id: genId("order"),
+            customerName: form.name,
+            phone: form.phone,
+            city: form.city,
+            notes: [`توصيل للمكتب / للمنزل: ${form.delivery}`, form.notes.trim()]
+                .filter(Boolean)
+                .join("\n"),
+            items: cart,
+            total: cart.reduce((s, i) => s + i.price * i.qty, 0),
+            status: "جديد",
+            createdAt: new Date().toISOString(),
+            stockRestored: false,
+        };
+        try {
+            // خصم ذري على الخادم — يمنع بيع نفس القطعة مرتين
+            placedOrder = await placeOrderDB(order);
+        }
+        catch (e) {
+            const msg = (e && e.message) || String(e);
+            if (/Insufficient|not found/i.test(msg)) {
+                alert("عذراً، إحدى القطع نفدت للتو. حدّث الصفحة وراجع سلتك.");
+            } else {
+                alert("تعذّر إتمام الطلب حالياً: " + msg);
+            }
+            return;
+        }
+        try { await refreshProducts(); } catch (e) { }
+        setCart([]);
+        setShowCheckout(false);
+        setShowCart(false);
+        setSuccessOrder({ ...(placedOrder || order), delivery: form.delivery });
+    };
+    return (React.createElement("div", { className: showMenSections ? "min-h-screen men-section-landing" : "min-h-screen bg-[#22201E]" },
+        React.createElement("header", { className: "sticky top-0 z-30 bg-[#22201E]/90 backdrop-blur border-b border-[#3A3632]" },
+            React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-3 flex items-center justify-between" },
+                React.createElement("div", { className: "flex items-center gap-3" },
+                    React.createElement("button", { onClick: gender === "رجال" && !showMenSections ? () => chooseMenSection(null) : onBack, className: "flex items-center gap-1 text-xs font-body text-[#A8A29A] hover:text-[#F5F3F0] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-lg px-2.5 py-1.5" },
+                        React.createElement(ChevronLeft, { size: 14 }), showMenSections ? "الرئيسية" : gender),
+                    React.createElement("span", { className: "font-display font-black text-[#F5F3F0] text-xl tracking-tight" },
+                        "LEGENDS",
+                        React.createElement("span", { className: "text-[#C9A227]" }, "_"),
+                        "STYLE")),
+                React.createElement("button", { onClick: () => setShowCart(true), className: "men-landing-cart relative w-10 h-10 rounded-xl bg-[#2A2724] flex items-center justify-center text-[#E7E3DE] ring-1 ring-[#3A3632]" },
+                    React.createElement(ShoppingCart, { size: 18 }),
+                    cart.length > 0 && React.createElement("span", { className: "absolute -top-1.5 -left-1.5 bg-[#F5F3F0] text-[#F5F3F0] text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center" }, cart.reduce((s, i) => s + i.qty, 0))))),
+        React.createElement("section", { className: "men-landing-hero relative overflow-hidden border-b border-[#3A3632]" },
+            React.createElement("div", {
+                "aria-hidden": true,
+                className: sectionCover ? "absolute inset-0 bg-cover bg-center" : "absolute inset-0 bg-gradient-to-l from-[#2C332C] via-[#22201E] to-[#22201E]",
+                style: sectionCover ? { backgroundImage: `linear-gradient(rgba(24, 22, 20, .78), rgba(24, 22, 20, .88)), url("${sectionCover}")` } : undefined
+            }),
+            React.createElement("div", { className: "relative max-w-5xl mx-auto px-4 py-14 text-center" },
+                React.createElement("p", { className: "font-body text-[#C9A227] text-sm tracking-widest mb-2" }, GENDER_TAGLINE[gender] || ""),
+                React.createElement("h1", { className: "font-display font-black text-4xl md:text-6xl text-[#F5F3F0] leading-tight" }, gender === "رجال" ? (category || gender) : STORE_TAGLINE),
+                React.createElement("div", { className: "font-body text-sm text-[#A8A29A] mt-4 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
+                    React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#F5F3F0]" }, "\u0648\u0627\u062A\u0633\u0627\u0628: ", React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
+                    React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#F5F3F0]" }, STORE_EMAIL)
+                ),
+                React.createElement("p", { className: "font-body text-[#A8A29A] mt-3" }, "\u0643\u0644 \u0642\u0637\u0639\u0629 \u0628\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0623\u0644\u0648\u0627\u0646 \u0645\u062A\u0639\u062F\u062F\u0629\u060C \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646 \u0645\u062D\u062F\u062B \u0644\u062D\u0638\u0629 \u0628\u0644\u062D\u0638\u0629"))),
+        showMenSections
+            ? React.createElement("div", { className: "max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4 py-6" },
+                ["الكل", ...SECTIONS["رجال"].map(section => section.name)].map(name =>
+                    React.createElement("button", {
+                        key: name,
+                        type: "button",
+                        onClick: () => chooseMenSection(name),
+                        className: "aspect-square rounded-2xl bg-[#2A2724] bg-cover bg-center ring-1 ring-[#3A3632] hover:ring-[#C9A227] focus-visible:ring-[#C9A227] flex items-end justify-center p-3 text-center font-display font-bold text-lg sm:text-xl text-[#F5F3F0]",
+                        style: { backgroundImage: `linear-gradient(180deg, transparent 32%, rgba(18, 16, 14, .96) 100%), url("${MEN_SECTION_COVERS[name] || MEN_SECTION_COVERS["نسخة اللاعبين"]}")`,
+                            backgroundSize: name === "صيفي" ? "cover, 112% auto" : undefined,
+                            backgroundPosition: name === "صيفي" ? "center, center 28%" : undefined }
+                    }, name)))
+            : React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6 space-y-4" },
+            React.createElement("div", { className: "flex items-center gap-2 bg-[#2A2724] rounded-xl px-3 py-2.5 ring-1 ring-[#3A3632]" },
+                React.createElement(Search, { size: 18, className: "text-[#8A847B]" }),
+                React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C...", className: "bg-transparent outline-none text-[#F5F3F0] placeholder-[#7A746C] flex-1 font-body" })),
+            gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
+            React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pt-2" },
+                filtered.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: setOpenProduct })),
+                filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, (category !== "الكل" && !search.trim() && (SECTIONS[gender] || []).some(sc => sc.name === category)) ? "قريبًا — نجهّز منتجات هذا القسم" : "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
+        openProduct && React.createElement(ProductModal, { product: openProduct, cart: cart, onClose: () => setOpenProduct(null), onAddToCart: addToCart }),
+        showCart && React.createElement(CartModal, { cart: cart, products: products, onClose: () => setShowCart(false), onUpdateQty: updateQty, onRemove: removeItem, onCheckout: () => { setShowCart(false); setShowCheckout(true); } }),
+        showCheckout && React.createElement(CheckoutModal, { cart: cart, onClose: () => setShowCheckout(false), onSubmit: submitOrder }),
+        successOrder && React.createElement(OrderSuccessModal, { order: successOrder, onClose: () => setSuccessOrder(null) })));
+}
+/* ============ نموذج إضافة/تعديل منتج (أدمن) ============ */
+function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
+    const [name, setName] = useState((initial === null || initial === void 0 ? void 0 : initial.name) || "");
+    const [category, setCategory] = useState((initial === null || initial === void 0 ? void 0 : initial.category) || CATEGORIES[0]);
+    const [price, setPrice] = useState((initial === null || initial === void 0 ? void 0 : initial.price) || "");
+    const [onOffer, setOnOffer] = useState(!!(initial && initial.onOffer));
+    const [oldPrice, setOldPrice] = useState((initial && initial.oldPrice) || "");
+    const [image, setImage] = useState((initial === null || initial === void 0 ? void 0 : initial.image) || null);
+    const [variants, setVariants] = useState(initial?.variants || [{ size: "M", color: "عادي", stock: 0 }]);
+    const updateVariant = (idx, field, value) => {
+        setVariants(vs => vs.map((v, i) => i === idx ? { ...v, [field]: field === "stock" ? Number(value) : value } : v));
+    };
+    const addVariantRow = () => setVariants(vs => [...vs, { size: "M", color: "عادي", stock: 0 }]);
+    const removeVariantRow = (idx) => setVariants(vs => vs.filter((_, i) => i !== idx));
+    const [draftId] = useState(() => initial?.id || genId("prod"));
+    const [saved, setSaved] = useState(initial);
+    const [saving, setSaving] = useState(false);
+    const [autoError, setAutoError] = useState("");
+    const [imagePending, setImagePending] = useState(false);
+    const [imageError, setImageError] = useState(false);
+    const imageRequest = useRef(0);
+    const handleImageUpload = (e) => {
+        var _a;
+        const file = (_a = e.target.files) === null || _a === void 0 ? void 0 : _a[0];
+        if (!file)
+            return;
+        const request = ++imageRequest.current;
+        setImagePending(true);
+        setImageError(false);
+        const reader = new FileReader();
+        reader.onload = async () => {
+            if (request !== imageRequest.current) return;
+            let image = reader.result;
+            if (/^image\/(jpeg|png|webp)$/i.test(file.type) && file.size > 150000) {
+                try {
+                    const photo = new Image();
+                    photo.src = image;
+                    await photo.decode();
+                    const ratio = Math.min(1, 1280 / Math.max(photo.naturalWidth, photo.naturalHeight));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.max(1, Math.round(photo.naturalWidth * ratio));
+                    canvas.height = Math.max(1, Math.round(photo.naturalHeight * ratio));
+                    canvas.getContext("2d").drawImage(photo, 0, 0, canvas.width, canvas.height);
+                    const compact = canvas.toDataURL("image/webp", 0.82);
+                    if (compact.startsWith("data:image/") && compact.length < image.length) image = compact;
+                } catch { /* Keep the original when conversion is unavailable. */ }
+            }
+            if (request !== imageRequest.current) return;
+            setImage(image);
+            setImagePending(false);
+        };
+        reader.onerror = () => {
+            if (request !== imageRequest.current) return;
+            setImagePending(false);
+            setImageError(true);
+        };
+        reader.readAsDataURL(file);
+    };
+    const draft = useMemo(() => ({
+        id: draftId, name: name.trim(), category, price: Number(price) || 0,
+        onOffer, oldPrice: Number(oldPrice) || 0, image, variants
+    }), [draftId, name, category, price, onOffer, oldPrice, image, variants]);
+    const keys = variants.map(v => JSON.stringify([v.size, v.color]));
+    const canSave = draft.name && variants.every(v => v.color.trim()) && new Set(keys).size === keys.length;
+    const dirty = !!initial && (["name", "category", "price", "onOffer", "oldPrice", "image"]
+        .some(field => draft[field] !== saved[field]) || JSON.stringify(variants) !== JSON.stringify(saved.variants));
+    const pending = dirty || saving || imagePending;
+    useEffect(() => {
+        if (!initial || !pending) return;
+        const warn = e => { e.preventDefault(); e.returnValue = ""; };
+        window.addEventListener("beforeunload", warn);
+        return () => window.removeEventListener("beforeunload", warn);
+    }, [initial, pending]);
+    useEffect(() => {
+        if (!dirty || !canSave || saving || imagePending || autoError) return;
+        const timer = setTimeout(async () => {
+            setSaving(true);
+            try {
+                await onAutoSave(draft, saved);
+                setSaved(draft);
+            } catch (e) {
+                setAutoError(e instanceof Error ? e.message : String(e));
+            } finally {
+                setSaving(false);
+            }
+        }, 650);
+        return () => clearTimeout(timer);
+    }, [draft, saved, dirty, canSave, saving, imagePending, autoError, onAutoSave]);
+    const close = () => { if (!pending) onCancel(); };
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: close },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-lg w-full ring-1 ring-[#3A3632] font-body max-h-[85vh] flex flex-col", onClick: e => e.stopPropagation() },
+            React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
+                React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, initial ? "تعديل منتج" : "منتج جديد"),
+                React.createElement("button", { onClick: close, disabled: pending, className: "disabled:opacity-40 text-[#A8A29A] hover:text-[#F5F3F0]" },
+                    React.createElement(X, { size: 20 }))),
+            React.createElement("div", { className: "p-4 space-y-3 overflow-y-auto flex-1" },
+                React.createElement("input", { placeholder: "\u0627\u0633\u0645 \u0627\u0644\u0645\u0646\u062A\u062C", value: name, onChange: e => setName(e.target.value), className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
+                React.createElement("div", { className: "flex items-center gap-3" },
+                    image
+                        ? React.createElement("img", { src: image, alt: "preview", className: "w-16 h-16 rounded-lg object-cover ring-1 ring-[#46413B]" })
+                        : React.createElement("div", { className: "w-16 h-16 rounded-lg bg-[#332F2B] flex items-center justify-center text-[#6E6860] text-xs" }, "\u0644\u0627 \u0635\u0648\u0631\u0629"),
+                    React.createElement("label", { className: "flex-1 text-sm text-[#6EE7A8] font-bold cursor-pointer bg-[#332F2B] rounded-lg px-3 py-2.5 text-center" },
+                        image ? "تغيير الصورة" : "رفع صورة",
+                        React.createElement("input", { type: "file", accept: "image/*", onChange: handleImageUpload, className: "hidden" })),
+                    image && React.createElement("button", { onClick: () => { imageRequest.current += 1; setImagePending(false); setImageError(false); setImage(null); }, className: "text-[#F0A0A0]" },
+                        React.createElement(Trash2, { size: 16 }))),
+                React.createElement("div", { className: "grid grid-cols-2 gap-3" },
+                    React.createElement("select", { value: displayCategory(category), onChange: e => setCategory(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none" }, CATEGORIES.map(c => React.createElement("option", { key: c, value: c }, c))),
+                    React.createElement("input", { type: "number", placeholder: "\u0627\u0644\u0633\u0639\u0631", value: price, onChange: e => setPrice(e.target.value), className: "bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
+                React.createElement("div", { className: "bg-[#332F2B] rounded-lg px-3 py-2.5 space-y-2" },
+                    React.createElement("label", { className: "flex items-center gap-2 text-sm text-[#F5F3F0] cursor-pointer" },
+                        React.createElement("input", { type: "checkbox", checked: onOffer, disabled: !OFFERS_SUPPORTED, onChange: e => setOnOffer(e.target.checked) }), "منتج في صفحة العروض"),
+                    onOffer && React.createElement("input", { type: "number", placeholder: "السعر قبل الخصم (اختياري)", value: oldPrice, disabled: !OFFERS_SUPPORTED, onChange: e => setOldPrice(e.target.value), className: "w-full bg-[#2A2724] rounded-lg px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
+                React.createElement("div", { className: "space-y-2" },
+                    React.createElement("p", { className: "text-sm text-[#A8A29A]" }, "\u0627\u0644\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0627\u0644\u0623\u0644\u0648\u0627\u0646 \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646"),
+                    variants.map((v, idx) => (React.createElement("div", { key: idx, className: "flex items-center gap-2" },
+                        React.createElement("select", { value: v.size, onChange: e => updateVariant(idx, "size", e.target.value), className: "bg-[#332F2B] rounded-lg px-2 py-2 text-[#F5F3F0] outline-none" }, SIZE_OPTIONS.map(s => React.createElement("option", { key: s, value: s }, s))),
+                        React.createElement("input", { placeholder: "\u0627\u0644\u0644\u0648\u0646", value: v.color, onChange: e => updateVariant(idx, "color", e.target.value), className: "flex-1 bg-[#332F2B] rounded-lg px-2 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
+                        React.createElement("input", { type: "number", placeholder: "\u0627\u0644\u0643\u0645\u064A\u0629", value: v.stock, onChange: e => updateVariant(idx, "stock", e.target.value), className: "w-20 bg-[#332F2B] rounded-lg px-2 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
+                        React.createElement("button", { onClick: () => removeVariantRow(idx), className: "text-[#F0A0A0]" },
+                            React.createElement(Trash2, { size: 16 }))))),
+                    React.createElement("button", { onClick: addVariantRow, className: "text-[#6EE7A8] text-sm font-bold flex items-center gap-1" },
+                        React.createElement(Plus, { size: 14 }),
+                        " \u0625\u0636\u0627\u0641\u0629 \u0645\u0642\u0627\u0633/\u0644\u0648\u0646"))),
+            React.createElement("div", { className: "p-4 border-t border-[#3A3632]" },
+                imageError && React.createElement("p", { role: "alert", className: "mb-2 text-sm text-[#F0A0A0]" }, "تعذّرت قراءة الصورة. اخترها مرة ثانية."),
+                initial ? React.createElement("div", { className: "flex items-center justify-between gap-3 text-sm text-[#F5F3F0]" },
+                    React.createElement("span", { role: "status" }, autoError ? "تعذّر الحفظ التلقائي. " + autoError
+                        : imagePending ? "جاري قراءة الصورة…"
+                        : dirty && !canSave ? "تأكد من الاسم واللون ومن عدم تكرار المقاس واللون."
+                        : saving || dirty ? "جاري الحفظ…" : saved === initial ? "الحفظ التلقائي مفعّل" : "تم الحفظ"),
+                    autoError && React.createElement("button", { onClick: () => setAutoError(""), className: "shrink-0 text-[#6EE7A8]" }, "إعادة المحاولة"),
+                    dirty && !canSave && !saving && !autoError && React.createElement("button", { onClick: () => {
+                        setName(saved.name);
+                        setVariants(saved.variants);
+                    }, className: "shrink-0 text-[#F0A0A0]" }, "استرجاع الاسم والمقاسات")
+                ): React.createElement("button", { disabled: !canSave || !variants.length || imagePending || saving, onClick: async () => {
+                    setSaving(true);
+                    try { await onSave(draft); }
+                    finally { setSaving(false); }
+                }, className: "w-full py-3 rounded-xl bg-[#F5F3F0] disabled:bg-[#332F2B] disabled:text-[#8A847B] text-[#22201E] font-display font-bold" }, saving ? "جاري الحفظ…" : "حفظ المنتج")))));
+}
+/* ============ لوحة التحكم ============ */
+function AdminView({ products, orders, saveProducts, saveOrders, refreshProducts, onExit, onError }) {
+    const [tab, setTab] = useState("overview");
+    const [editing, setEditing] = useState(null);
+    const [showForm, setShowForm] = useState(false);
+    const [productSearch, setProductSearch] = useState("");
+    const [productCategoryFilter, setProductCategoryFilter] = useState("الكل");
+    const filteredAdminProducts = useMemo(() => {
+        const section = SECTIONS["رجال"].find(section => section.name === productCategoryFilter);
+        const categories = section ? section.cats : [productCategoryFilter];
+        return products.filter(p => (productCategoryFilter === "الكل" || categories.includes(p.category)) &&
+            p.name.includes(productSearch.trim()));
+    }, [products, productSearch, productCategoryFilter]);
+    const lowStockList = products.flatMap(p => p.variants
+        .filter(v => v.stock <= LOW_STOCK)
+        .map(v => ({ product: p.name, size: v.size, color: v.color, stock: v.stock })));
+    const noPriceCount = products.filter(p => !(p.price > 0)).length;
+    const revenue = orders.filter(o => o.status !== "ملغي").reduce((s, o) => s + o.total, 0);
+    const [openingProduct, setOpeningProduct] = useState(false);
+    const openProductEditor = async (product) => {
+        if (openingProduct) return;
+        setOpeningProduct(true);
+        try {
+            const image = product.image === undefined ? await loadProductImage(product.id) : product.image;
+            setEditing({ ...product, image });
+            setShowForm(true);
+        } catch (e) {
+            onError?.("تعذّر تحميل صورة المنتج. جرّب فتح التعديل مرة ثانية.");
+        } finally {
+            setOpeningProduct(false);
+        }
+    };
+    const autoSaveProduct = React.useCallback(async (product, previous) => {
+        await updateProductDB(product, previous);
+        productImages.set(product.id, Promise.resolve(product.image));
+        saveProducts(current => current.map(p => p.id === product.id ? product : p));
+    }, [saveProducts]);
+    const saveProduct = async (product) => {
+        try {
+            await upsertProductDB(product);
+            saveProducts(current => current.some(p => p.id === product.id)
+                ? current.map(p => p.id === product.id ? product : p)
+                : [...current, product]);
+            setShowForm(false);
+            setEditing(null);
+        }
+        catch (e) {
+            onError && onError("تعذّر حفظ المنتج: " + (e && e.message ? e.message : String(e)));
+        }
+    };
+    const deleteProduct = async (id) => {
+        try {
+            await deleteProductDB(id);
+            saveProducts(current => current.filter(p => p.id !== id));
+        }
+        catch (e) {
+            onError && onError("تعذّر حذف المنتج: " + (e && e.message ? e.message : String(e)));
+        }
+    };
+    const updateOrderStatus = async (orderId, status) => {
+        try {
+            const updated = await updateOrderStatusDB(orderId, status);
+            await saveOrders(orders.map(o => o.id === orderId ? updated : o));
+            if (status === "ملغي") { try { await refreshProducts(); } catch (e) { } }
+        }
+        catch (e) {
+            onError && onError("تعذّر تحديث الطلب: " + (e && e.message ? e.message : String(e)));
+        }
+    };
+    const statusColor = { "جديد": "bg-[#1C2B3F] text-[#93C5FD]", "قيد التجهيز": "bg-[#3E3312] text-[#C9A227]", "تم التسليم": "bg-[#1E3A2C] text-[#6EE7A8]", "ملغي": "bg-[#3A1D1D] text-[#F0A0A0]" };
+    return (React.createElement("div", { className: "min-h-screen bg-[#22201E] font-body" },
+        React.createElement("header", { className: "sticky top-0 z-30 bg-[#22201E]/95 border-b border-[#3A3632]" },
+            React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-3 flex items-center justify-between" },
+                React.createElement("span", { className: "font-display font-black text-[#F5F3F0]" }, "\u0644\u0648\u062D\u0629 \u062A\u062D\u0643\u0645 legends_style"),
+                React.createElement("button", { onClick: onExit, className: "text-sm text-[#A8A29A] flex items-center gap-1" },
+                    React.createElement(ChevronLeft, { size: 16 }),
+                    " \u0631\u062C\u0648\u0639 \u0644\u0644\u0645\u062A\u062C\u0631")),
+            React.createElement("div", { className: "max-w-5xl mx-auto px-4 flex gap-1 pb-2" }, [["overview", "نظرة عامة", LayoutGrid], ["products", "المنتجات", Package], ["orders", "الطلبات", ClipboardList]].map(([id, label, Icon]) => (React.createElement("button", { key: id, onClick: () => setTab(id), className: `flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold ${tab === id ? "bg-[#F5F3F0] text-[#22201E]" : "text-[#A8A29A]"}` },
+                React.createElement(Icon, { size: 14 }),
+                " ",
+                label))))),
+        React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-6" },
+            tab === "overview" && (React.createElement("div", { className: "space-y-6" },
+                React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" },
+                    React.createElement("div", { className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632]" },
+                        React.createElement("p", { className: "text-[#8A847B] text-xs" }, "\u0639\u062F\u062F \u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A"),
+                        React.createElement("p", { className: "font-display font-black text-[#F5F3F0] text-2xl" }, products.length)),
+                    React.createElement("div", { className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632]" },
+                        React.createElement("p", { className: "text-[#8A847B] text-xs" }, "\u0627\u0644\u0637\u0644\u0628\u0627\u062A \u0627\u0644\u062C\u062F\u064A\u062F\u0629"),
+                        React.createElement("p", { className: "font-display font-black text-[#F5F3F0] text-2xl" }, orders.filter(o => o.status === "جديد").length)),
+                    React.createElement("div", { className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632]" },
+                        React.createElement("p", { className: "text-[#8A847B] text-xs" }, "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0645\u0628\u064A\u0639\u0627\u062A"),
+                        React.createElement("p", { className: "font-display font-black text-[#C9A227] text-2xl" }, fmt(revenue))),
+                    React.createElement("div", { className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632]" },
+                        React.createElement("p", { className: "text-[#8A847B] text-xs" }, "\u062A\u0646\u0628\u064A\u0647\u0627\u062A \u0645\u062E\u0632\u0648\u0646"),
+                        React.createElement("p", { className: "font-display font-black text-[#F0A0A0] text-2xl" }, lowStockList.length)),
+                    React.createElement("div", { className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632] col-span-2 md:col-span-1" },
+                        React.createElement("p", { className: "text-[#8A847B] text-xs" }, "\u0645\u0646\u062A\u062C\u0627\u062A \u0628\u062F\u0648\u0646 \u0633\u0639\u0631"),
+                        React.createElement("p", { className: "font-display font-black text-[#C9A227] text-2xl" }, noPriceCount))),
+                noPriceCount > 0 && (React.createElement("div", { className: "bg-[#3E3312] ring-1 ring-[#5A4A1C] rounded-xl p-4 text-sm text-[#E8C468]" },
+                    "\u0641\u064A\u0647 ",
+                    noPriceCount,
+                    " \u0645\u0646\u062A\u062C \u0628\u062F\u0648\u0646 \u0633\u0639\u0631 \u2014 \u0627\u0644\u0639\u0645\u0644\u0627\u0621 \u0645\u0627 \u064A\u0642\u062F\u0631\u0648\u0646 \u064A\u0634\u062A\u0631\u0648\u0646\u0647\u0627 \u0644\u064A\u0646 \u062A\u062D\u062F\u062F \u0633\u0639\u0631\u0647\u0627 \u0645\u0646 \u062A\u0628\u0648\u064A\u0628 \"\u0627\u0644\u0645\u0646\u062A\u062C\u0627\u062A\".")),
+                React.createElement("div", { className: "bg-[#2A2724] rounded-xl ring-1 ring-[#3A3632] p-4" },
+                    React.createElement("h3", { className: "font-display font-bold text-[#F5F3F0] mb-3 flex items-center gap-2" },
+                        React.createElement(AlertTriangle, { size: 16, className: "text-[#C9A227]" }),
+                        " \u0645\u062E\u0632\u0648\u0646 \u0645\u0646\u062E\u0641\u0636 \u0623\u0648 \u0646\u0627\u0641\u0630"),
+                    lowStockList.length === 0 && React.createElement("p", { className: "text-[#8A847B] text-sm" }, "\u0643\u0644 \u0634\u064A \u0645\u062A\u0648\u0641\u0631 \u0628\u0634\u0643\u0644 \u062C\u064A\u062F \uD83D\uDC4D"),
+                    React.createElement("div", { className: "space-y-2" }, lowStockList.slice(0, 30).map((l, i) => (React.createElement("div", { key: i, className: "flex items-center justify-between text-sm border-b border-[#3A3632] pb-2 last:border-0" },
+                        React.createElement("span", { className: "text-[#C4BDB4]" },
+                            l.product,
+                            " \u2014 ",
+                            l.size,
+                            " / ",
+                            l.color),
+                        React.createElement(StockBadge, { stock: l.stock }))))),
+                    lowStockList.length > 30 && React.createElement("p", { className: "text-center text-[#8A847B] text-xs pt-2" },
+                        "\u0648",
+                        lowStockList.length - 30,
+                        " \u062A\u0646\u0628\u064A\u0647 \u0625\u0636\u0627\u0641\u064A...")))),
+            tab === "products" && (React.createElement("div", { className: "space-y-4" },
+                React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    React.createElement("button", { onClick: () => { setEditing(null); setShowForm(true); }, className: "flex items-center gap-2 bg-[#F5F3F0] text-[#22201E] px-4 py-2 rounded-xl font-bold" },
+                        React.createElement(Plus, { size: 16 }),
+                        " \u0645\u0646\u062A\u062C \u062C\u062F\u064A\u062F"),
+                    React.createElement("input", { value: productSearch, onChange: e => setProductSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C \u0628\u0627\u0644\u0627\u0633\u0645...", className: "flex-1 min-w-[160px] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-xl px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" }),
+                    React.createElement("select", { value: productCategoryFilter, onChange: e => setProductCategoryFilter(e.target.value), className: "bg-[#2A2724] ring-1 ring-[#3A3632] rounded-xl px-3 py-2 text-[#F5F3F0] outline-none" },
+                        React.createElement("option", { value: "\u0627\u0644\u0643\u0644" }, "\u0643\u0644 \u0627\u0644\u0623\u0642\u0633\u0627\u0645"),
+                        CATEGORIES.map(c => React.createElement("option", { key: c, value: c }, c)))),
+                React.createElement("p", { className: "text-xs text-[#8A847B]" },
+                    "\u0639\u0631\u0636 ",
+                    filteredAdminProducts.length,
+                    " \u0645\u0646 ",
+                    products.length,
+                    " \u0645\u0646\u062A\u062C"),
+                React.createElement("div", { className: "space-y-2" },
+                    filteredAdminProducts.map(p => (React.createElement("div", { key: p.id, className: "bg-[#2A2724] rounded-xl p-3 ring-1 ring-[#3A3632] flex items-center justify-between gap-3" },
+                        React.createElement("div", { className: "flex items-center gap-3 min-w-0" },
+                            React.createElement(CatalogImage, { product: p, className: "w-12 h-12 rounded-lg overflow-hidden bg-[#332F2B] object-cover flex-shrink-0" }),
+                            React.createElement("div", { className: "min-w-0" },
+                                React.createElement("p", { className: "font-bold text-[#F5F3F0] truncate" }, p.name),
+                                React.createElement("p", { className: "text-xs text-[#8A847B]" },
+                                    displayCategory(p.category),
+                                    " \u00B7 ",
+                                    p.price > 0 ? fmt(p.price) : "بدون سعر",
+                                    " \u00B7 \u0645\u062E\u0632\u0648\u0646: ",
+                                    totalStock(p)))),
+                        React.createElement("div", { className: "flex items-center gap-2 flex-shrink-0" },
+                            React.createElement("button", { disabled: openingProduct, onClick: () => openProductEditor(p), className: "w-8 h-8 rounded-lg bg-[#332F2B] text-[#C4BDB4] flex items-center justify-center" },
+                                React.createElement(PencilLine, { size: 14 })),
+                            React.createElement("button", { onClick: () => deleteProduct(p.id), className: "w-8 h-8 rounded-lg bg-[#3A1D1D] text-[#F0A0A0] flex items-center justify-center" },
+                                React.createElement(Trash2, { size: 14 }))))))))),
+            tab === "orders" && (React.createElement("div", { className: "space-y-3" },
+                orders.length === 0 && React.createElement("p", { className: "text-[#8A847B] text-center py-10" }, "\u0645\u0627 \u0641\u064A\u0647 \u0637\u0644\u0628\u0627\u062A \u0644\u0633\u0627"),
+                [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(o => (React.createElement("div", { key: o.id, className: "bg-[#2A2724] rounded-xl p-4 ring-1 ring-[#3A3632] space-y-2" },
+                    React.createElement("div", { className: "flex items-center justify-between" },
+                        React.createElement("p", { className: "font-bold text-[#F5F3F0]" },
+                            "#",
+                            o.id.slice(-5),
+                            " \u00B7 ",
+                            o.customerName),
+                        React.createElement("select", { value: o.status, onChange: e => updateOrderStatus(o.id, e.target.value), className: `text-xs font-bold px-2 py-1 rounded-lg outline-none ${statusColor[o.status]}` }, ["جديد", "قيد التجهيز", "تم التسليم", "ملغي"].map(s => React.createElement("option", { key: s, value: s }, s)))),
+                    React.createElement("p", { className: "text-xs text-[#8A847B]" },
+                        o.phone,
+                        " \u00B7 ",
+                        o.city),
+                    typeof o.notes === "string" && o.notes.trim() && React.createElement("p", {
+                        className: "text-sm text-[#C4BDB4] whitespace-pre-wrap break-words"
+                    }, o.notes),
+                    React.createElement("div", { className: "text-sm text-[#A8A29A] space-y-0.5" }, o.items.map((it, i) => React.createElement("p", { key: i },
+                        "- ",
+                        it.name,
+                        " (",
+                        it.size,
+                        "/",
+                        it.color,
+                        ") \u00D7 ",
+                        it.qty))),
+                    React.createElement("p", { className: "font-display font-bold text-[#C9A227]" }, fmt(o.total)))))))),
+        showForm && React.createElement(ProductForm, { initial: editing, onSave: saveProduct, onAutoSave: autoSaveProduct, onCancel: () => { setShowForm(false); setEditing(null); } })));
+}
+/* ============ بوابة دخول الأدمن ============ */
+function AdminGate({ onSuccess, onCancel }) {
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState(false);
+    const [busy, setBusy] = useState(false);
+    const submit = async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await adminLogin(email, password); onSuccess(); }
+        catch (e) { setError(true); setBusy(false); }
+    };
+    const inputCls = "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] placeholder-[#7A746B] outline-none";
+    return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onCancel },
+        React.createElement("form", { className: "bg-[#2A2724] rounded-2xl max-w-xs w-full ring-1 ring-[#3A3632] p-6 space-y-3 font-body", onClick: e => e.stopPropagation(), onSubmit: e => { e.preventDefault(); submit(); } },
+            React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg text-center" }, "دخول لوحة التحكم"),
+            React.createElement("input", { type: "email", autoComplete: "username", dir: "ltr", value: email, onChange: e => { setEmail(e.target.value); setError(false); }, placeholder: "البريد الإلكتروني", className: inputCls }),
+            React.createElement("input", { type: "password", autoComplete: "current-password", dir: "ltr", value: password, onChange: e => { setPassword(e.target.value); setError(false); }, placeholder: "كلمة المرور", className: inputCls }),
+            error && React.createElement("p", { className: "text-[#F0A0A0] text-xs text-center" }, "بيانات الدخول غير صحيحة"),
+            React.createElement("button", { type: "submit", disabled: busy, className: "w-full py-2.5 rounded-xl bg-[#F5F3F0] text-[#22201E] font-bold disabled:opacity-60" }, busy ? "..." : "دخول"))));
+}
+/* ============ التطبيق الرئيسي ============ */
+function App() {
+    const [products, setProducts] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [cart, setCart] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [view, setView] = useState("store");
+    const [gender, setGender] = useState(null);
+    const [showGate, setShowGate] = useState(false);
+    const [saveError, setSaveError] = useState(null);
+    const [productLoadError, setProductLoadError] = useState(false);
+    const productRequest = useRef(0);
+    const saveProducts = React.useCallback((updated) => {
+        productRequest.current += 1;
+        setProducts(updated);
+    }, []);
+    const refreshProducts = async () => {
+        const request = ++productRequest.current;
+        setProductLoadError(false);
+        try {
+            const list = await loadProductsFromDB();
+            if (request === productRequest.current) setProducts(list);
+        } catch (e) {
+            if (request === productRequest.current) setProductLoadError(true);
+        }
+    };
+    useEffect(() => {
+        refreshProducts().finally(() => setLoading(false));
+    }, []);
+    const saveOrders = async (updated) => { setOrders(updated); };
+    const addOrder = async (order) => {
+        const updated = [...orders, order];
+        await saveOrders(updated);
+    };
+    const refreshOrders = async () => {
+        try {
+            const o = await window.storage.get("orders", true);
+            setOrders(JSON.parse(o.value));
+        }
+        catch (e) { }
+    };
+    return (React.createElement("div", { dir: "rtl" },
+        React.createElement(GlobalStyle, null),
+        loading && React.createElement("div", { role: "status", className: "relative z-40 bg-[#2A2724] p-2 text-center text-sm text-[#F5F3F0]" }, "جاري تحميل المنتجات…"),
+        productLoadError && React.createElement("div", { role: "alert", className: "relative z-40 flex flex-wrap items-center justify-center gap-3 bg-[#4A3521] p-3 text-sm text-[#F5F3F0]" },
+            "تعذّر تحميل أحدث بيانات المنتجات.",
+            React.createElement("button", { type: "button", onClick: refreshProducts, className: "rounded-lg bg-[#F5F3F0] px-3 py-1.5 font-bold text-[#22201E]" }, "إعادة المحاولة")),
+        saveError && React.createElement("div", { className: "fixed bottom-4 right-4 left-4 md:left-auto md:w-96 z-[9999] bg-[#3A1D1D] ring-1 ring-[#6A3232] text-[#F2B8B8] rounded-xl p-4 font-body text-sm shadow-lg" },
+            React.createElement("div", { className: "font-bold mb-1" }, "لم يتم الحفظ في قاعدة البيانات"),
+            React.createElement("div", { className: "text-xs opacity-90 break-words" }, saveError),
+            React.createElement("button", { onClick: () => setSaveError(null), className: "mt-3 text-xs bg-red-900 hover:bg-red-800 rounded-lg px-3 py-1.5" }, "إغلاق")),
+        view === "store" ? (React.createElement(React.Fragment, null,
+            gender === null
+                ? React.createElement(LandingView, { products: products, onPick: (g) => { setGender(g); window.scrollTo(0, 0); } })
+                : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
+            React.createElement("button", { onClick: () => setShowGate(true), className: "fixed bottom-4 left-4 w-10 h-10 rounded-full bg-[#2A2724] ring-1 ring-[#3A3632] text-[#8A847B] flex items-center justify-center z-20" },
+                React.createElement(Settings, { size: 16 })),
+            showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshProducts(); refreshOrders(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { adminLogout(); setView("store"); refreshProducts(); } }))));
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App, null));
+</script>
+</body>
+</html>
