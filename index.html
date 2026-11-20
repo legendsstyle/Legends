@@ -232,25 +232,28 @@ async function sbRequest(path, options = {}) {
     return res;
 }
 // ===== خريطة الصور: مضمّنة في الملف نفسه، فلا تُحمَّل من قاعدة البيانات =====
-let fallbackImagesRequest;
+const bundledFiles = {"p1":["images-a7bff5a50d2b.bin",0,14594],"p2":["images-a7bff5a50d2b.bin",14594,13354],"p3":["images-a7bff5a50d2b.bin",27948,9744],"p4":["images-a7bff5a50d2b.bin",37692,14664],"p5":["images-a7bff5a50d2b.bin",52356,11476],"p6":["images-49249a48bae0.bin",0,7570],"p7":["images-49249a48bae0.bin",7570,7786],"p8":["images-49249a48bae0.bin",15356,10928],"p9":["images-49249a48bae0.bin",26284,13980],"p10":["images-49249a48bae0.bin",40264,17312],"p11":["images-9b0b36070cff.bin",0,14706],"p12":["images-9b0b36070cff.bin",14706,10996],"p13":["images-9b0b36070cff.bin",25702,7244],"p14":["images-9b0b36070cff.bin",32946,5894],"p15":["images-9b0b36070cff.bin",38840,8792],"p16":["images-55256ac62b22.bin",0,10344],"p17":["images-55256ac62b22.bin",10344,17100],"p18":["images-55256ac62b22.bin",27444,14322],"p19":["images-55256ac62b22.bin",41766,11432],"p20":["images-55256ac62b22.bin",53198,12484],"p21":["images-5800d468eedf.bin",0,14742],"p22":["images-5800d468eedf.bin",14742,9240],"p23":["images-5800d468eedf.bin",23982,14592],"p24":["images-5800d468eedf.bin",38574,6498],"p25":["images-5800d468eedf.bin",45072,11212],"p26":["images-fb586beed867.bin",0,6486],"p27":["images-fb586beed867.bin",6486,10498],"p28":["images-fb586beed867.bin",16984,14104],"p29":["images-fb586beed867.bin",31088,11508],"p30":["images-fb586beed867.bin",42596,8616],"p31":["images-e0bb9e66144b.bin",0,7462],"p32":["images-e0bb9e66144b.bin",7462,11442],"p33":["images-e0bb9e66144b.bin",18904,7464],"p34":["images-e0bb9e66144b.bin",26368,7332],"p35":["images-e0bb9e66144b.bin",33700,7668],"p36":["images-9fba7fceb300.bin",0,20554],"p37":["images-9fba7fceb300.bin",20554,12984],"p38":["images-9fba7fceb300.bin",33538,9870],"p39":["images-9fba7fceb300.bin",43408,8564],"p40":["images-9fba7fceb300.bin",51972,8168],"p41":["images-8458c5fc65eb.bin",0,10920],"p42":["images-8458c5fc65eb.bin",10920,7234],"p44":["images-8458c5fc65eb.bin",18154,6794],"p45":["images-8458c5fc65eb.bin",24948,6686],"p46":["images-8458c5fc65eb.bin",31634,13436],"p47":["images-b9c997909334.bin",0,10790],"p48":["images-b9c997909334.bin",10790,7688],"p49":["images-b9c997909334.bin",18478,11070],"p50":["images-b9c997909334.bin",29548,8528],"p51":["images-b9c997909334.bin",38076,11134],"p52":["images-278d52a98f7b.bin",0,12100],"p53":["images-278d52a98f7b.bin",12100,7302],"p54":["images-278d52a98f7b.bin",19402,8236],"p55":["images-278d52a98f7b.bin",27638,7698],"p56":["images-278d52a98f7b.bin",35336,8898],"p57":["images-7143138ff6c2.bin",0,9450],"p58":["images-7143138ff6c2.bin",9450,8770],"p59":["images-7143138ff6c2.bin",18220,6684],"p60":["images-7143138ff6c2.bin",24904,7162],"p61":["images-7143138ff6c2.bin",32066,7444],"p62":["images-ae2b3ce3baa8.bin",0,4354],"p63":["images-ae2b3ce3baa8.bin",4354,7594],"p64":["images-ae2b3ce3baa8.bin",11948,7864],"p65":["images-ae2b3ce3baa8.bin",19812,9224],"p66":["images-ae2b3ce3baa8.bin",29036,11186],"p67":["images-feb6281af82b.bin",0,9242],"p68":["images-feb6281af82b.bin",9242,8454],"p69":["images-feb6281af82b.bin",17696,8472],"p70":["images-feb6281af82b.bin",26168,8628],"p71":["images-feb6281af82b.bin",34796,9676],"p72":["images-097217ee3738.bin",0,10190],"p73":["images-097217ee3738.bin",10190,7558],"p74":["images-097217ee3738.bin",17748,5940],"p75":["images-097217ee3738.bin",23688,12046],"p76":["images-097217ee3738.bin",35734,8552],"p77":["images-ec9bfb5173ae.bin",0,8090],"p78":["images-ec9bfb5173ae.bin",8090,8700],"p79":["images-ec9bfb5173ae.bin",16790,8072],"p80":["images-ec9bfb5173ae.bin",24862,9710],"p81":["images-ec9bfb5173ae.bin",34572,7852],"p82":["images-610d9bf0fcd2.bin",0,6974],"p83":["images-610d9bf0fcd2.bin",6974,8676],"p84":["images-610d9bf0fcd2.bin",15650,11666],"p85":["images-610d9bf0fcd2.bin",27316,12948],"p86":["images-610d9bf0fcd2.bin",40264,6126],"p87":["images-fb2fabbbaefe.bin",0,8798],"p89":["images-fb2fabbbaefe.bin",8798,11328],"p90":["images-fb2fabbbaefe.bin",20126,10348],"p91":["images-fb2fabbbaefe.bin",30474,10508],"p92":["images-fb2fabbbaefe.bin",40982,11086],"p93":["images-7a61c2d4a450.bin",0,10284],"p94":["images-7a61c2d4a450.bin",10284,12458],"p95":["images-7a61c2d4a450.bin",22742,8048],"p97":["images-7a61c2d4a450.bin",30790,11172],"p98":["images-7a61c2d4a450.bin",41962,11986],"p99":["images-8b892ff031c2.bin",0,11384],"p100":["images-8b892ff031c2.bin",11384,12526],"p102":["images-8b892ff031c2.bin",23910,11932],"p103":["images-8b892ff031c2.bin",35842,10206],"p104":["images-8b892ff031c2.bin",46048,13642],"p105":["images-36342c2f2b02.bin",0,9642],"p106":["images-36342c2f2b02.bin",9642,11120],"p107":["images-36342c2f2b02.bin",20762,13116],"p108":["images-36342c2f2b02.bin",33878,10368],"p109":["images-36342c2f2b02.bin",44246,13922],"p110":["images-0fd81105abac.bin",0,9930],"p111":["images-0fd81105abac.bin",9930,8978],"p112":["images-0fd81105abac.bin",18908,12612],"p113":["images-0fd81105abac.bin",31520,11090],"p114":["images-0fd81105abac.bin",42610,9506],"p116":["images-a1e1f0f37bf5.bin",0,13422],"p118":["images-a1e1f0f37bf5.bin",13422,11116],"p119":["images-a1e1f0f37bf5.bin",24538,16092],"p121":["images-a1e1f0f37bf5.bin",40630,15304],"p122":["images-a1e1f0f37bf5.bin",55934,20920],"p123":["images-fd25e64f863b.bin",0,21828],"p124":["images-fd25e64f863b.bin",21828,20802],"p125":["images-a7bff5a50d2b.bin",0,14594],"p126":["images-a7bff5a50d2b.bin",14594,13354],"p127":["images-a7bff5a50d2b.bin",27948,9744],"p128":["images-a7bff5a50d2b.bin",52356,11476],"p129":["images-49249a48bae0.bin",0,7570],"p130":["images-fd25e64f863b.bin",42630,9632],"p131":["images-fd25e64f863b.bin",52262,13328],"p132":["images-5800d468eedf.bin",45072,11212],"p133":["images-fb586beed867.bin",0,6486],"p134":["images-fb586beed867.bin",6486,10498],"p135":["images-8458c5fc65eb.bin",18154,6794],"p136":["images-fd25e64f863b.bin",65590,8130],"p137":["images-55256ac62b22.bin",0,10344],"p138":["images-e0bb9e66144b.bin",7462,11442],"p139":["images-e0bb9e66144b.bin",18904,7464],"p140":["images-e0bb9e66144b.bin",26368,7332],"p141":["images-9fba7fceb300.bin",0,20554],"p142":["images-9fba7fceb300.bin",20554,12984],"p143":["images-9fba7fceb300.bin",33538,9870],"p144":["images-278d52a98f7b.bin",19402,8236],"p145":["images-278d52a98f7b.bin",27638,7698],"p146":["images-278d52a98f7b.bin",35336,8898],"p147":["images-7143138ff6c2.bin",0,9450],"p148":["images-7143138ff6c2.bin",9450,8770],"p149":["images-7143138ff6c2.bin",18220,6684],"p150":["images-7143138ff6c2.bin",32066,7444],"p151":["images-ae2b3ce3baa8.bin",4354,7594],"p152":["images-ae2b3ce3baa8.bin",11948,7864],"p153":["images-ae2b3ce3baa8.bin",19812,9224],"p154":["images-ec9bfb5173ae.bin",24862,9710],"p155":["images-c5c1add8c528.bin",0,10976],"p156":["images-9b0b36070cff.bin",25702,7244],"p157":["images-9b0b36070cff.bin",38840,8792],"p158":["images-c5c1add8c528.bin",10976,12548],"p159":["images-55256ac62b22.bin",27444,14322],"p160":["images-c5c1add8c528.bin",23524,13126],"p161":["images-c5c1add8c528.bin",36650,13956],"p162":["images-5800d468eedf.bin",14742,9240],"p163":["images-5800d468eedf.bin",23982,14592],"p164":["images-8458c5fc65eb.bin",0,10920],"p165":["images-b9c997909334.bin",10790,7688],"p166":["images-feb6281af82b.bin",17696,8472],"p167":["images-feb6281af82b.bin",26168,8628],"p168":["images-feb6281af82b.bin",34796,9676],"p169":["images-c5c1add8c528.bin",50606,11878],"p170":["images-49249a48bae0.bin",40264,17312],"p171":["images-9b0b36070cff.bin",14706,10996],"p172":["images-49b79742c4ce.bin",0,10726],"p173":["images-fb586beed867.bin",31088,11508],"p174":["images-fb586beed867.bin",42596,8616],"p175":["images-b9c997909334.bin",29548,8528],"p176":["images-b9c997909334.bin",38076,11134],"p177":["images-278d52a98f7b.bin",0,12100],"p178":["images-49b79742c4ce.bin",10726,4818],"p179":["images-49b79742c4ce.bin",15544,9162],"p180":["images-610d9bf0fcd2.bin",27316,12948],"p181":["images-fb2fabbbaefe.bin",0,8798],"p182":["images-b9c997909334.bin",18478,11070],"p184":["images-49b79742c4ce.bin",24706,7628],"p186":["images-097217ee3738.bin",35734,8552],"p187":["images-49b79742c4ce.bin",32334,5998],"p189":["images-ae2b3ce3baa8.bin",0,4354],"p190":["images-47f2133a156c.bin",0,9388],"p191":["images-47f2133a156c.bin",9388,10082],"p192":["images-47f2133a156c.bin",19470,5748],"p193":["images-47f2133a156c.bin",25218,6108],"p194":["images-47f2133a156c.bin",31326,12614],"p195":["images-1aac864b8757.bin",0,6374],"p196":["images-1aac864b8757.bin",6374,11752],"p197":["images-1aac864b8757.bin",18126,11370],"p198":["images-1aac864b8757.bin",29496,23836],"p199":["images-1aac864b8757.bin",53332,23690],"p200":["images-63c4b329194c.bin",0,21346],"p201":["images-63c4b329194c.bin",21346,24908],"p202":["images-63c4b329194c.bin",46254,16952],"p203":["images-63c4b329194c.bin",63206,6176],"p204":["images-63c4b329194c.bin",69382,8730],"p205":["images-8a721ea82da8.bin",0,10788],"p206":["images-8a721ea82da8.bin",10788,11980],"p208":["images-8a721ea82da8.bin",22768,12334],"p209":["images-8a721ea82da8.bin",35102,9446],"p210":["images-8a721ea82da8.bin",44548,9088],"p211":["images-a27c9d7d6361.bin",0,9226],"p212":["images-a27c9d7d6361.bin",9226,3910],"p213":["images-a27c9d7d6361.bin",13136,6694],"p214":["images-a27c9d7d6361.bin",19830,7518],"p215":["images-a27c9d7d6361.bin",27348,6138],"p216":["images-c5595986d09b.bin",0,6862],"p217":["images-c5595986d09b.bin",6862,6166],"p218":["images-c5595986d09b.bin",13028,6704],"p219":["images-c5595986d09b.bin",19732,6818],"p220":["images-c5595986d09b.bin",26550,4986],"p221":["images-a73f05bec09a.bin",0,4504],"p222":["images-a73f05bec09a.bin",4504,10112],"p223":["images-a73f05bec09a.bin",14616,7908],"p224":["images-a73f05bec09a.bin",22524,4366],"p225":["images-a73f05bec09a.bin",26890,6356],"p226":["images-373f2ff32d49.bin",0,8348],"p228":["images-373f2ff32d49.bin",8348,5766],"p229":["images-373f2ff32d49.bin",14114,6226],"p230":["images-373f2ff32d49.bin",20340,5632],"p231":["images-373f2ff32d49.bin",25972,7132],"p232":["images-ca7fea3f879a.bin",0,7720],"p233":["images-ca7fea3f879a.bin",7720,6006],"p234":["images-ca7fea3f879a.bin",13726,5510],"p235":["images-ca7fea3f879a.bin",19236,7490],"p236":["images-ca7fea3f879a.bin",26726,7406],"p237":["images-aa5006d677ca.bin",0,10878],"p238":["images-aa5006d677ca.bin",10878,7668],"p239":["images-aa5006d677ca.bin",18546,6610],"p240":["images-aa5006d677ca.bin",25156,9342],"p241":["images-aa5006d677ca.bin",34498,7444],"p242":["images-b2c22d41f06e.bin",0,7082],"p243":["images-b2c22d41f06e.bin",7082,6516],"p244":["images-b2c22d41f06e.bin",13598,10996],"p245":["images-b2c22d41f06e.bin",24594,7846],"p246":["images-b2c22d41f06e.bin",32440,16184],"p247":["images-7fa3ac98efb8.bin",0,5142],"p248":["images-7fa3ac98efb8.bin",5142,8498],"p249":["images-7fa3ac98efb8.bin",13640,12234],"p250":["images-7fa3ac98efb8.bin",25874,12814],"p252":["images-7fa3ac98efb8.bin",38688,16856],"p253":["images-59d45c93053f.bin",0,16616],"p255":["images-59d45c93053f.bin",16616,12400],"p256":["images-59d45c93053f.bin",29016,4564],"p257":["images-59d45c93053f.bin",33580,5778],"p258":["images-59d45c93053f.bin",39358,6004],"p259":["images-b22c356f6f96.bin",0,5422],"p260":["images-b22c356f6f96.bin",5422,4370],"p264":["images-b22c356f6f96.bin",9792,7306],"p265":["images-b22c356f6f96.bin",17098,6180],"p266":["images-b22c356f6f96.bin",23278,6186],"p267":["images-81126231d049.bin",0,5600],"p268":["images-81126231d049.bin",5600,7214],"p269":["images-81126231d049.bin",12814,5596],"p270":["images-81126231d049.bin",18410,5422],"p271":["images-81126231d049.bin",23832,9888],"p272":["images-c3d725a6dd82.bin",0,8288],"p273":["images-c3d725a6dd82.bin",8288,7696],"p274":["images-c3d725a6dd82.bin",15984,8070],"p275":["images-c3d725a6dd82.bin",24054,8944],"p276":["images-c3d725a6dd82.bin",32998,8382],"p277":["images-d2387c255908.bin",0,9160],"p278":["images-d2387c255908.bin",9160,10660],"p279":["images-d2387c255908.bin",19820,6018],"p281":["images-d2387c255908.bin",25838,6908],"p282":["images-d2387c255908.bin",32746,7122],"p283":["images-435ffaf5ed67.bin",0,8754],"p284":["images-435ffaf5ed67.bin",8754,7474],"p285":["images-435ffaf5ed67.bin",16228,9482],"p286":["images-435ffaf5ed67.bin",25710,10520],"p287":["images-435ffaf5ed67.bin",36230,5890],"p288":["images-9114a55b2a7b.bin",0,7746],"p289":["images-9114a55b2a7b.bin",7746,7844],"p290":["images-9114a55b2a7b.bin",15590,8846],"p293":["images-9114a55b2a7b.bin",24436,6692],"p294":["images-9114a55b2a7b.bin",31128,5848],"p295":["images-2d573b9b9194.bin",0,5880],"p296":["images-2d573b9b9194.bin",5880,9438],"p297":["images-2d573b9b9194.bin",15318,4944],"p298":["images-2d573b9b9194.bin",20262,4886],"p299":["images-2d573b9b9194.bin",25148,6550],"p300":["images-e44811ce4e2b.bin",0,5540],"p301":["images-e44811ce4e2b.bin",5540,4770],"p302":["images-e44811ce4e2b.bin",10310,8082],"p303":["images-e44811ce4e2b.bin",18392,6650],"p304":["images-e44811ce4e2b.bin",25042,5162],"p305":["images-7ff6db7a1477.bin",0,5078],"p306":["images-7ff6db7a1477.bin",5078,6048],"p307":["images-7ff6db7a1477.bin",11126,5830],"p308":["images-7ff6db7a1477.bin",16956,4240],"p310":["images-7ff6db7a1477.bin",21196,9820],"p311":["images-cc0109e5748f.bin",0,10432],"p312":["images-cc0109e5748f.bin",10432,13598],"p313":["images-cc0109e5748f.bin",24030,9914],"p314":["images-cc0109e5748f.bin",33944,9834],"p315":["images-cc0109e5748f.bin",43778,8436],"p316":["images-35ac86aeaefb.bin",0,10190],"p317":["images-35ac86aeaefb.bin",10190,11080],"p318":["images-35ac86aeaefb.bin",21270,6064],"p319":["images-35ac86aeaefb.bin",27334,10596],"p320":["images-35ac86aeaefb.bin",37930,8584],"p321":["images-41b0e3d707de.bin",0,10432],"p322":["images-41b0e3d707de.bin",10432,8318],"p323":["images-41b0e3d707de.bin",18750,9010],"p324":["images-41b0e3d707de.bin",27760,12466],"p325":["images-41b0e3d707de.bin",40226,5692],"p326":["images-809f9c62971a.bin",0,11086],"p327":["images-809f9c62971a.bin",11086,11168],"p328":["images-809f9c62971a.bin",22254,11920],"p329":["images-809f9c62971a.bin",34174,7854],"p330":["images-809f9c62971a.bin",42028,9892],"p331":["images-fb386e7c4349.bin",0,13582],"p332":["images-fb386e7c4349.bin",13582,11274],"p333":["images-fb386e7c4349.bin",24856,10262],"p334":["images-fb386e7c4349.bin",35118,10324],"p335":["images-fb386e7c4349.bin",45442,11096],"p336":["images-d232e3faa3a7.bin",0,10100],"p337":["images-d232e3faa3a7.bin",10100,2774],"p338":["images-d232e3faa3a7.bin",12874,10098],"p339":["images-d232e3faa3a7.bin",22972,11116],"p340":["images-d232e3faa3a7.bin",34088,11402],"p341":["images-4f50c8660915.bin",0,10752],"p342":["images-4f50c8660915.bin",10752,11656],"p343":["images-4f50c8660915.bin",22408,11342],"p344":["images-4f50c8660915.bin",33750,11512],"p345":["images-4f50c8660915.bin",45262,10368],"p346":["images-a3d31c6019f8.bin",0,9542],"p347":["images-a3d31c6019f8.bin",9542,9826],"p348":["images-a3d31c6019f8.bin",19368,10672],"p349":["images-a3d31c6019f8.bin",30040,4720],"p350":["images-a3d31c6019f8.bin",34760,5436],"p351":["images-057fd6fdc9c1.bin",0,13802],"p352":["images-057fd6fdc9c1.bin",13802,4922],"p353":["images-057fd6fdc9c1.bin",18724,6008],"p367":["images-057fd6fdc9c1.bin",24732,11914],"p374":["images-057fd6fdc9c1.bin",36646,13612],"p375":["images-f8acd19ed307.bin",0,11310],"p376":["images-f8acd19ed307.bin",11310,11668],"p378":["images-f8acd19ed307.bin",22978,6296],"p379":["images-f8acd19ed307.bin",29274,12108]};
+const imagePacks = new Map();
+const bundledSources = new Map();
 async function bundledImage(id) {
-    if (!fallbackImagesRequest) {
-        fallbackImagesRequest = new Promise((resolve, reject) => {
-            const script = document.createElement("script");
-            script.src = "./legends-assets/fallback-images.js";
-            script.onload = () => resolve(window.legendsFallbackImages || {});
-            script.onerror = () => {
-                script.remove();
-                reject(new Error("تعذّر تحميل الصور الاحتياطية"));
-            };
-            document.head.append(script);
+    if (!Object.hasOwn(bundledFiles, id)) return null;
+    if (bundledSources.has(id)) return bundledSources.get(id);
+    const [file, offset, size] = bundledFiles[id];
+    if (!imagePacks.has(file)) {
+        const request = fetch("./legends-assets/" + file).then(response => {
+            if (!response.ok) throw new Error("تعذّر تحميل صور المنتج");
+            return response.blob();
         }).catch(error => {
-            fallbackImagesRequest = undefined;
+            imagePacks.delete(file);
             throw error;
         });
+        imagePacks.set(file, request);
     }
-    const images = await fallbackImagesRequest;
-    return Object.hasOwn(images, id) ? images[id] : null;
+    const pack = await imagePacks.get(file);
+    if (!bundledSources.has(id)) {
+        bundledSources.set(id, URL.createObjectURL(pack.slice(offset, offset + size, "image/webp")));
+    }
+    return bundledSources.get(id);
 }
 
 // ===== قراءة المنتجات والصور من Supabase على دفعات =====
@@ -276,6 +279,11 @@ async function loadProductsFromDB() {
         }
         return out;
     };
+    const generation = ++fallbackGeneration;
+    currentFallbackIds = new Set();
+    fetchAll("products_norm?select=id&image_url=is.null&order=id.asc")
+        .then(rows => { if (generation === fallbackGeneration) currentFallbackIds = new Set(rows.map(row => row.id)); })
+        .catch(() => {});
     let rows;
     try {
         rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,variants(size,color,stock)&order=sort_order.asc,id.asc");
@@ -300,12 +308,17 @@ async function loadProductsFromDB() {
 }
 
 // تحميل الصورة عند ظهور بطاقة المنتج، بدون تأخير الكتالوج.
+let currentFallbackIds = new Set();
+let fallbackGeneration = 0;
 const productImages = new Map();
 function loadProductImage(id) {
     if (!productImages.has(id)) {
-        const request = sbRequest("products_norm?select=image_url&id=eq." + encodeURIComponent(id), { cache: "no-store" })
-            .then(response => response.json())
-            .then(async rows => (rows[0]?.image_url ?? await bundledImage(id)) || null)
+        const request = Promise.resolve(currentFallbackIds).then(async ids => {
+            if (ids.has(id)) return bundledImage(id);
+            const response = await sbRequest("products_norm?select=image_url&id=eq." + encodeURIComponent(id), { cache: "no-store" });
+            const rows = await response.json();
+            return (rows[0]?.image_url ?? bundledImage(id)) || null;
+        })
             .catch(error => {
                 if (productImages.get(id) === request) productImages.delete(id);
                 throw error;
@@ -371,7 +384,7 @@ async function restockAtomic(items) {
 
 // ===== حفظ/تعديل منتج واحد من لوحة التحكم (حمولة صغيرة) =====
 async function upsertProductDB(p) {
-    const isBundled = !!p.image && p.image === window.legendsFallbackImages?.[p.id];
+    const isBundled = !!p.image && p.image === bundledSources.get(p.id);
     await sbRequest("products_norm", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
@@ -1150,9 +1163,25 @@ function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
         setImagePending(true);
         setImageError(false);
         const reader = new FileReader();
-        reader.onload = () => {
+        reader.onload = async () => {
             if (request !== imageRequest.current) return;
-            setImage(reader.result);
+            let image = reader.result;
+            if (/^image\/(jpeg|png|webp)$/i.test(file.type) && file.size > 150000) {
+                try {
+                    const photo = new Image();
+                    photo.src = image;
+                    await photo.decode();
+                    const ratio = Math.min(1, 1280 / Math.max(photo.naturalWidth, photo.naturalHeight));
+                    const canvas = document.createElement("canvas");
+                    canvas.width = Math.max(1, Math.round(photo.naturalWidth * ratio));
+                    canvas.height = Math.max(1, Math.round(photo.naturalHeight * ratio));
+                    canvas.getContext("2d").drawImage(photo, 0, 0, canvas.width, canvas.height);
+                    const compact = canvas.toDataURL("image/webp", 0.82);
+                    if (compact.startsWith("data:image/") && compact.length < image.length) image = compact;
+                } catch { /* Keep the original when conversion is unavailable. */ }
+            }
+            if (request !== imageRequest.current) return;
+            setImage(image);
             setImagePending(false);
         };
         reader.onerror = () => {
