@@ -871,11 +871,11 @@ function GenderCards({ products, onPick }) {
     );
 }
 
-function LandingView({ products, onPick }) {
+function LandingView({ products, stockReady, onPick }) {
     useReveal();
 
     const STATS = [
-        { n: `${products.length}+`, l: "قطعة متوفرة" },
+        { n: stockReady ? products.reduce((sum, product) => sum + totalStock(product), 0).toLocaleString("ar-OM") : "…", l: "قطعة متوفرة" },
         { n: "١٠٠٪", l: "جودة مضمونة" },
         { n: "عُمان", l: "توصيل داخل السلطنة" },
     ];
@@ -1530,7 +1530,7 @@ function App() {
             React.createElement("button", { onClick: () => setSaveError(null), className: "mt-3 text-xs bg-red-900 hover:bg-red-800 rounded-lg px-3 py-1.5" }, "إغلاق")),
         view === "store" ? (React.createElement(React.Fragment, null,
             gender === null
-                ? React.createElement(LandingView, { products: products, onPick: (g) => { setGender(g); window.scrollTo(0, 0); } })
+                ? React.createElement(LandingView, { products: products, stockReady: !loading && !productLoadError, onPick: (g) => { setGender(g); window.scrollTo(0, 0); } })
                 : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
             React.createElement("button", { onClick: () => setShowGate(true), className: "fixed bottom-4 left-4 w-10 h-10 rounded-full bg-[#2A2724] ring-1 ring-[#3A3632] text-[#8A847B] flex items-center justify-center z-20" },
                 React.createElement(Settings, { size: 16 })),
