@@ -311,18 +311,50 @@ async function loadProductsFromDB() {
 let currentFallbackIds = new Set();
 let fallbackGeneration = 0;
 const productImages = new Map();
+const pendingImageRequests = [];
+let imageRequestTimer;
+
+async function fetchImageBatch(batch) {
+    try {
+        const ids = batch.map(({ id }) => '"' + id.replace(/[\\"]/g, "\\$&") + '"');
+        const filter = batch.length === 1
+            ? "eq." + encodeURIComponent(batch[0].id)
+            : "in." + encodeURIComponent("(" + ids.join(",") + ")");
+        const response = await sbRequest("products_norm?select=id,image_url&id=" + filter, { cache: "no-store" });
+        const images = new Map((await response.json()).map(row => [row.id, row.image_url]));
+        for (const { id, resolve } of batch) {
+            resolve(images.get(id) ?? bundledImage(id));
+        }
+    } catch (error) {
+        if (batch.length === 1) {
+            batch[0].reject(error);
+        } else {
+            // Older uploaded images may be stored inline and exceed a batch response limit.
+            for (const entry of batch) await fetchImageBatch([entry]);
+        }
+    }
+}
+
 function loadProductImage(id) {
     if (!productImages.has(id)) {
-        const request = Promise.resolve(currentFallbackIds).then(async ids => {
-            if (ids.has(id)) return bundledImage(id);
-            const response = await sbRequest("products_norm?select=image_url&id=eq." + encodeURIComponent(id), { cache: "no-store" });
-            const rows = await response.json();
-            return (rows[0]?.image_url ?? bundledImage(id)) || null;
-        })
-            .catch(error => {
-                if (productImages.get(id) === request) productImages.delete(id);
-                throw error;
-            });
+        const request = new Promise((resolve, reject) => {
+            if (currentFallbackIds.has(id)) {
+                resolve(bundledImage(id));
+                return;
+            }
+            pendingImageRequests.push({ id, resolve, reject });
+            if (imageRequestTimer !== undefined) return;
+            imageRequestTimer = setTimeout(() => {
+                imageRequestTimer = undefined;
+                const pending = pendingImageRequests.splice(0);
+                for (let start = 0; start < pending.length; start += 8) {
+                    fetchImageBatch(pending.slice(start, start + 8));
+                }
+            }, 20);
+        }).catch(error => {
+            if (productImages.get(id) === request) productImages.delete(id);
+            throw error;
+        });
         productImages.set(id, request);
     }
     return productImages.get(id);
