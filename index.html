@@ -1061,6 +1061,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
     const chooseMenSection = (section) => {
         setCategory(section);
         setSearch("");
+        setSelectedSize("");
         window.scrollTo(0, 0);
     };
     const categoryProducts = useMemo(() => {
@@ -1190,7 +1191,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
                 React.createElement(Search, { size: 18, className: "text-[#8A847B]" }),
                 React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C...", className: "bg-transparent outline-none text-[#F5F3F0] placeholder-[#7A746C] flex-1 font-body" })),
             gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => { setCategory(c); setSelectedSize(""); }, className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
-            React.createElement("div", { className: "flex flex-wrap items-center gap-3 font-body" },
+            category !== "أحذية وإكسسوارات" && React.createElement("div", { className: "flex flex-wrap items-center gap-3 font-body" },
                 React.createElement("label", { htmlFor: "catalog-size-filter", className: "text-sm font-bold text-[#F5F3F0]" }, "فلترة حسب المقاس"),
                 React.createElement("select", { id: "catalog-size-filter", value: selectedSize, onChange: e => setSelectedSize(e.target.value), disabled: !stockReady || !sizeOptions.length, className: "min-h-11 rounded-xl bg-[#2A2724] px-3 text-[#F5F3F0] ring-1 ring-[#3A3632] focus-visible:ring-[#C9A227] disabled:opacity-50" },
                     React.createElement("option", { value: "" }, shopBySize ? "اختر مقاسك" : "كل المقاسات"),
