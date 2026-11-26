@@ -533,6 +533,11 @@ function displayCategory(category) {
 }
 const CATEGORIES = ["نسخة اللاعبين", "الأوفر سايز", "أطقم تدريب قصيرة", "أطقم تدريب طويلة", "قمصان أكمام طويلة", "أحذية وإكسسوارات", "صيفي", "كاچوال", "كلاسيك", "أطفال", "نسائي"];
 const SIZE_OPTIONS = ["S", "M", "L", "XL", "XXL", "3XL", "4XL", "20", "22", "24", "26", "28", "39", "40", "41", "42", "43", "44"];
+const SIZE_SHOP = "تسوّق حسب مقاسك";
+function sizeFilterValue(size) {
+    const value = String(size ?? "").trim().toUpperCase();
+    return value === "2XL" ? "XXL" : value;
+}
 const LOW_STOCK = 3;
 const STORE_WHATSAPP = "96877116435";
 const STORE_EMAIL = "Balhbsy504@gmail.com"; // غيّرها لرقم واتساب متجرك الفعلي
@@ -690,17 +695,17 @@ function ProductCard({ product, onOpen }) {
                 React.createElement(StockBadge, { stock: stock })))));
 }
 /* ============ مودال تفاصيل المنتج + إضافة للسلة ============ */
-function ProductModal({ product, cart, onClose, onAddToCart }) {
-    var _a;
+function ProductModal({ product, cart, preferredSize, onClose, onAddToCart }) {
     const sizes = [...new Set(product.variants.map(v => v.size))];
-    const [size, setSize] = useState(sizes[0]);
+    const preferredVariant = preferredSize && product.variants.find(v => v.stock > 0 && sizeFilterValue(v.size) === preferredSize);
+    const [size, setSize] = useState(preferredVariant ? preferredVariant.size : sizes[0]);
     const colorsForSize = product.variants.filter(v => v.size === size);
-    const [color, setColor] = useState((_a = colorsForSize[0]) === null || _a === void 0 ? void 0 : _a.color);
-    useEffect(() => {
-        var _a;
-        const cs = product.variants.filter(v => v.size === size);
-        setColor((_a = cs[0]) === null || _a === void 0 ? void 0 : _a.color);
-    }, [size]);
+    const [color, setColor] = useState(preferredVariant ? preferredVariant.color : colorsForSize[0]?.color);
+    const chooseSize = (nextSize) => {
+        setSize(nextSize);
+        const variants = product.variants.filter(v => v.size === nextSize);
+        setColor((variants.find(v => v.stock > 0) || variants[0])?.color);
+    };
     const variant = product.variants.find(v => v.size === size && v.color === color);
     const stock = variant ? variant.stock : 0;
     const inCart = (cart || []).filter(i => i.productId === product.id && i.size === size && i.color === color).reduce((s, i) => s + i.qty, 0);
@@ -722,7 +727,7 @@ function ProductModal({ product, cart, onClose, onAddToCart }) {
                         : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-1 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F \u0628\u0639\u062F")),
                 React.createElement("div", null,
                     React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0645\u0642\u0627\u0633"),
-                    React.createElement("div", { className: "flex gap-2 flex-wrap" }, sizes.map(s => (React.createElement("button", { key: s, onClick: () => setSize(s), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${size === s ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, s))))),
+                    React.createElement("div", { className: "flex gap-2 flex-wrap" }, sizes.map(s => (React.createElement("button", { key: s, onClick: () => chooseSize(s), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${size === s ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, s))))),
                 colorsForSize.length > 1 && (React.createElement("div", null,
                     React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0644\u0648\u0646"),
                     React.createElement("div", { className: "flex gap-2 flex-wrap" }, colorsForSize.map(v => (React.createElement("button", { key: v.color, onClick: () => setColor(v.color), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${color === v.color ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, v.color)))))),
@@ -978,6 +983,7 @@ function LandingView({ products, stockReady, onPick }) {
                 React.createElement("p", { className: "font-body text-[#6B6358] mt-3 text-base md:text-lg" }, STORE_TAGLINE),
                 React.createElement("div", { className: "mx-auto mt-5 h-px w-28 bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent" })
             ),
+            React.createElement("button", { type: "button", onClick: () => onPick(SIZE_SHOP), className: "relative z-10 mt-6 rounded-xl bg-[#2A2420] px-6 py-3 font-body font-bold text-[#F5F3F0] hover:bg-[#41362D] focus-visible:ring-2 focus-visible:ring-[#C9A227]" }, SIZE_SHOP),
             React.createElement("div", { className: "relative z-10 grid grid-cols-3 gap-5 md:gap-10 mt-12 ls-rise ls-d2" },
                 STATS.map((s, i) => React.createElement("div", { key: i, className: "text-center" },
                     React.createElement("div", { className: "font-display font-black text-xl md:text-3xl text-[#2A2420]" }, s.n),
@@ -1030,21 +1036,26 @@ function LandingView({ products, stockReady, onPick }) {
     );
 }
 
-function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refreshProducts, gender, onBack }) {
+function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refreshProducts, gender, stockReady, onBack }) {
     const [search, setSearch] = useState("");
     const [category, setCategory] = useState(gender === "رجال" ? null : "الكل");
+    const [selectedSize, setSelectedSize] = useState("");
     const [openProduct, setOpenProduct] = useState(null);
     const [showCart, setShowCart] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
     const [successOrder, setSuccessOrder] = useState(null);
-    const genderProducts = useMemo(() => gender === "عروض" ? products.filter(p => p.onOffer) : products.filter(p => genderOf(p.category) === gender), [products, gender]);
+    const shopBySize = gender === SIZE_SHOP;
+    const genderProducts = useMemo(() => {
+        if (shopBySize) return products;
+        return gender === "عروض" ? products.filter(p => p.onOffer) : products.filter(p => genderOf(p.category) === gender);
+    }, [products, gender, shopBySize]);
     const filters = useMemo(() => {
         const secs = SECTIONS[gender] || [];
         const covered = new Set(secs.flatMap(sc => sc.cats));
         const rest = [...new Set(genderProducts.map(p => p.category))].filter(c => !covered.has(c)).map(c => ({ label: c, cats: [c] }));
         return [...secs.map(sc => ({ label: sc.name, cats: sc.cats })), ...rest];
     }, [genderProducts, gender]);
-    useEffect(() => { setCategory(gender === "رجال" ? null : "الكل"); setSearch(""); }, [gender]);
+    useEffect(() => { setCategory(gender === "رجال" ? null : "الكل"); setSearch(""); setSelectedSize(""); }, [gender]);
     const showMenSections = gender === "رجال" && category === null;
     const sectionCover = gender === "رجال" && category !== "الكل" && MEN_SECTION_COVERS[category];
     const chooseMenSection = (section) => {
@@ -1052,11 +1063,33 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         setSearch("");
         window.scrollTo(0, 0);
     };
+    const categoryProducts = useMemo(() => {
+        if (category === "الكل") return genderProducts;
+        const current = filters.find(f => f.label === category);
+        return current ? genderProducts.filter(p => current.cats.includes(p.category)) : [];
+    }, [genderProducts, category, filters]);
+    const sizeOptions = useMemo(() => {
+        const sizes = new Set();
+        for (const product of categoryProducts) {
+            for (const variant of product.variants) {
+                const size = sizeFilterValue(variant.size);
+                if (size) sizes.add(size);
+            }
+        }
+        return [...sizes].sort((a, b) => {
+            const order = size => {
+                const index = SIZE_OPTIONS.indexOf(size);
+                return index >= 0 ? index : SIZE_OPTIONS.length;
+            };
+            return order(a) - order(b) || a.localeCompare(b, undefined, { numeric: true });
+        });
+    }, [categoryProducts]);
     const filtered = useMemo(() => {
-        const cur = filters.find(f => f.label === category);
-        return genderProducts.filter(p => (category === "الكل" || (cur && cur.cats.includes(p.category))) &&
-            p.name.includes(search.trim()));
-    }, [genderProducts, search, category, filters]);
+        if (shopBySize && !selectedSize) return [];
+        const query = search.trim();
+        return categoryProducts.filter(p => p.name.includes(query) &&
+            (!selectedSize || p.variants.some(v => sizeFilterValue(v.size) === selectedSize && v.stock > 0)));
+    }, [categoryProducts, search, selectedSize, shopBySize]);
     const addToCart = (item) => {
         setCart(prev => {
             const idx = prev.findIndex(i => i.productId === item.productId && i.size === item.size && i.color === item.color);
@@ -1118,7 +1151,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             React.createElement("div", { className: "max-w-5xl mx-auto px-4 py-3 flex items-center justify-between" },
                 React.createElement("div", { className: "flex items-center gap-3" },
                     React.createElement("button", { onClick: gender === "رجال" && !showMenSections ? () => chooseMenSection(null) : onBack, className: "flex items-center gap-1 text-xs font-body text-[#A8A29A] hover:text-[#F5F3F0] bg-[#2A2724] ring-1 ring-[#3A3632] rounded-lg px-2.5 py-1.5" },
-                        React.createElement(ChevronLeft, { size: 14 }), showMenSections ? "الرئيسية" : gender),
+                        React.createElement(ChevronLeft, { size: 14 }), showMenSections || shopBySize ? "الرئيسية" : gender),
                     React.createElement("span", { className: "font-display font-black text-[#F5F3F0] text-xl tracking-tight" },
                         "LEGENDS",
                         React.createElement("span", { className: "text-[#C9A227]" }, "_"),
@@ -1134,7 +1167,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             }),
             React.createElement("div", { className: "relative max-w-5xl mx-auto px-4 py-14 text-center" },
                 React.createElement("p", { className: "font-body text-[#C9A227] text-sm tracking-widest mb-2" }, GENDER_TAGLINE[gender] || ""),
-                React.createElement("h1", { className: "font-display font-black text-4xl md:text-6xl text-[#F5F3F0] leading-tight" }, gender === "رجال" ? (category || gender) : STORE_TAGLINE),
+                React.createElement("h1", { className: "font-display font-black text-4xl md:text-6xl text-[#F5F3F0] leading-tight" }, shopBySize ? SIZE_SHOP : gender === "رجال" ? (category || gender) : STORE_TAGLINE),
                 React.createElement("div", { className: "font-body text-sm text-[#A8A29A] mt-4 flex flex-wrap gap-x-5 gap-y-1 justify-center" },
                     React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#F5F3F0]" }, "\u0648\u0627\u062A\u0633\u0627\u0628: ", React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
                     React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#F5F3F0]" }, STORE_EMAIL)
@@ -1156,11 +1189,19 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             React.createElement("div", { className: "flex items-center gap-2 bg-[#2A2724] rounded-xl px-3 py-2.5 ring-1 ring-[#3A3632]" },
                 React.createElement(Search, { size: 18, className: "text-[#8A847B]" }),
                 React.createElement("input", { value: search, onChange: e => setSearch(e.target.value), placeholder: "\u0627\u0628\u062D\u062B \u0639\u0646 \u0645\u0646\u062A\u062C...", className: "bg-transparent outline-none text-[#F5F3F0] placeholder-[#7A746C] flex-1 font-body" })),
-            gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => setCategory(c), className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
+            gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => { setCategory(c); setSelectedSize(""); }, className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
+            React.createElement("div", { className: "flex flex-wrap items-center gap-3 font-body" },
+                React.createElement("label", { htmlFor: "catalog-size-filter", className: "text-sm font-bold text-[#F5F3F0]" }, "فلترة حسب المقاس"),
+                React.createElement("select", { id: "catalog-size-filter", value: selectedSize, onChange: e => setSelectedSize(e.target.value), disabled: !stockReady || !sizeOptions.length, className: "min-h-11 rounded-xl bg-[#2A2724] px-3 text-[#F5F3F0] ring-1 ring-[#3A3632] focus-visible:ring-[#C9A227] disabled:opacity-50" },
+                    React.createElement("option", { value: "" }, shopBySize ? "اختر مقاسك" : "كل المقاسات"),
+                    (selectedSize && !sizeOptions.includes(selectedSize) ? [selectedSize, ...sizeOptions] : sizeOptions).map(size =>
+                        React.createElement("option", { key: size, value: size }, size))),
+                selectedSize && React.createElement("button", { type: "button", onClick: () => setSelectedSize(""), className: "min-h-11 px-2 text-sm text-[#E7E3DE] underline" }, "إلغاء الفلتر"),
+                selectedSize && stockReady && React.createElement("span", { role: "status", className: "text-sm text-[#A8A29A]" }, `${filtered.length.toLocaleString("ar-OM")} نتيجة`)),
             React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pt-2" },
                 filtered.map(p => React.createElement(ProductCard, { key: p.id, product: p, onOpen: setOpenProduct })),
-                filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, (category !== "الكل" && !search.trim() && (SECTIONS[gender] || []).some(sc => sc.name === category)) ? "قريبًا — نجهّز منتجات هذا القسم" : "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
-        openProduct && React.createElement(ProductModal, { product: openProduct, cart: cart, onClose: () => setOpenProduct(null), onAddToCart: addToCart }),
+                stockReady && filtered.length === 0 && React.createElement("p", { className: "col-span-full text-center text-[#8A847B] py-12" }, selectedSize ? `ما فيه منتجات متوفرة بمقاس ${selectedSize} ضمن النتائج` : shopBySize ? "اختر مقاسك عشان تشوف المتوفر" : (category !== "الكل" && !search.trim() && (SECTIONS[gender] || []).some(sc => sc.name === category)) ? "قريبًا — نجهّز منتجات هذا القسم" : "\u0645\u0627 \u0641\u064A\u0647 \u0645\u0646\u062A\u062C\u0627\u062A \u0645\u0637\u0627\u0628\u0642\u0629"))),
+        openProduct && React.createElement(ProductModal, { product: openProduct, cart: cart, preferredSize: selectedSize, onClose: () => setOpenProduct(null), onAddToCart: addToCart }),
         showCart && React.createElement(CartModal, { cart: cart, products: products, onClose: () => setShowCart(false), onUpdateQty: updateQty, onRemove: removeItem, onCheckout: () => { setShowCart(false); setShowCheckout(true); } }),
         showCheckout && React.createElement(CheckoutModal, { cart: cart, onClose: () => setShowCheckout(false), onSubmit: submitOrder }),
         successOrder && React.createElement(OrderSuccessModal, { order: successOrder, onClose: () => setSuccessOrder(null) })));
@@ -1567,7 +1608,7 @@ function App() {
         view === "store" ? (React.createElement(React.Fragment, null,
             gender === null
                 ? React.createElement(LandingView, { products: products, stockReady: !loading && !productLoadError, onPick: (g) => { setGender(g); window.scrollTo(0, 0); } })
-                : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
+                : React.createElement(StoreView, { products: products, cart: cart, setCart: setCart, onOrderPlaced: addOrder, saveProducts: saveProducts, refreshProducts: refreshProducts, gender: gender, stockReady: !loading && !productLoadError, onBack: () => { setGender(null); window.scrollTo(0, 0); } }),
             React.createElement("button", { onClick: () => setShowGate(true), className: "fixed bottom-4 left-4 w-10 h-10 rounded-full bg-[#2A2724] ring-1 ring-[#3A3632] text-[#8A847B] flex items-center justify-center z-20" },
                 React.createElement(Settings, { size: 16 })),
             showGate && React.createElement(AdminGate, { onSuccess: () => { setShowGate(false); setView("admin"); refreshProducts(); refreshOrders(); }, onCancel: () => setShowGate(false) }))) : (React.createElement(AdminView, { products: products, orders: orders, saveProducts: saveProducts, saveOrders: saveOrders, refreshProducts: refreshProducts, onError: setSaveError, onExit: () => { adminLogout(); setView("store"); refreshProducts(); } }))));
