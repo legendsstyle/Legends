@@ -983,7 +983,6 @@ function LandingView({ products, stockReady, onPick }) {
                 React.createElement("p", { className: "font-body text-[#6B6358] mt-3 text-base md:text-lg" }, STORE_TAGLINE),
                 React.createElement("div", { className: "mx-auto mt-5 h-px w-28 bg-gradient-to-r from-transparent via-[#C9A227]/70 to-transparent" })
             ),
-            React.createElement("button", { type: "button", onClick: () => onPick(SIZE_SHOP), className: "relative z-10 mt-6 rounded-xl bg-[#2A2420] px-6 py-3 font-body font-bold text-[#F5F3F0] hover:bg-[#41362D] focus-visible:ring-2 focus-visible:ring-[#C9A227]" }, SIZE_SHOP),
             React.createElement("div", { className: "relative z-10 grid grid-cols-3 gap-5 md:gap-10 mt-12 ls-rise ls-d2" },
                 STATS.map((s, i) => React.createElement("div", { key: i, className: "text-center" },
                     React.createElement("div", { className: "font-display font-black text-xl md:text-3xl text-[#2A2420]" }, s.n),
@@ -1044,6 +1043,9 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
     const [showCart, setShowCart] = useState(false);
     const [showCheckout, setShowCheckout] = useState(false);
     const [successOrder, setSuccessOrder] = useState(null);
+    const sizeFilterRef = useRef(null);
+    const [openSizeFilter, setOpenSizeFilter] = useState(false);
+    const showSizeShortcut = GENDERS.includes(gender) && category !== "أحذية وإكسسوارات";
     const shopBySize = gender === SIZE_SHOP;
     const genderProducts = useMemo(() => {
         if (shopBySize) return products;
@@ -1064,6 +1066,15 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
         setSelectedSize("");
         window.scrollTo(0, 0);
     };
+    useEffect(() => {
+        if (!openSizeFilter || showMenSections) return;
+        const filter = sizeFilterRef.current;
+        if (filter) {
+            filter.scrollIntoView({ block: "center" });
+            filter.focus({ preventScroll: true });
+        }
+        setOpenSizeFilter(false);
+    }, [openSizeFilter, showMenSections]);
     const categoryProducts = useMemo(() => {
         if (category === "الكل") return genderProducts;
         const current = filters.find(f => f.label === category);
@@ -1173,7 +1184,15 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
                     React.createElement("a", { href: "https://wa.me/" + STORE_WHATSAPP, target: "_blank", rel: "noreferrer", className: "hover:text-[#F5F3F0]" }, "\u0648\u0627\u062A\u0633\u0627\u0628: ", React.createElement("span", { dir: "ltr", style: { unicodeBidi: "isolate" } }, "+968 7711 6435")),
                     React.createElement("a", { href: "mailto:" + STORE_EMAIL, className: "hover:text-[#F5F3F0]" }, STORE_EMAIL)
                 ),
-                React.createElement("p", { className: "font-body text-[#A8A29A] mt-3" }, "\u0643\u0644 \u0642\u0637\u0639\u0629 \u0628\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0623\u0644\u0648\u0627\u0646 \u0645\u062A\u0639\u062F\u062F\u0629\u060C \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646 \u0645\u062D\u062F\u062B \u0644\u062D\u0638\u0629 \u0628\u0644\u062D\u0638\u0629"))),
+                React.createElement("p", { className: "font-body text-[#A8A29A] mt-3" }, "\u0643\u0644 \u0642\u0637\u0639\u0629 \u0628\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0623\u0644\u0648\u0627\u0646 \u0645\u062A\u0639\u062F\u062F\u0629\u060C \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646 \u0645\u062D\u062F\u062B \u0644\u062D\u0638\u0629 \u0628\u0644\u062D\u0638\u0629"),
+                showSizeShortcut && React.createElement("button", {
+                    type: "button",
+                    onClick: () => {
+                        if (showMenSections) chooseMenSection("الكل");
+                        setOpenSizeFilter(true);
+                    },
+                    className: "mt-5 min-h-11 rounded-xl bg-[#F1C64A] px-6 py-3 font-body font-bold text-[#22201E] hover:bg-[#FFDA6B] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#F1C64A]"
+                }, SIZE_SHOP))),
         showMenSections
             ? React.createElement("div", { className: "max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 px-4 py-6" },
                 ["الكل", ...SECTIONS["رجال"].map(section => section.name)].map(name =>
@@ -1193,7 +1212,7 @@ function StoreView({ products, cart, setCart, onOrderPlaced, saveProducts, refre
             gender !== "رجال" && React.createElement("div", { className: "flex gap-2 overflow-x-auto pb-1" }, ["الكل", ...filters.map(f => f.label)].map(c => (React.createElement("button", { key: c, onClick: () => { setCategory(c); setSelectedSize(""); }, className: `whitespace-nowrap px-4 py-1.5 rounded-full text-sm font-bold font-body ${category === c ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#2A2724] text-[#A8A29A] ring-1 ring-[#3A3632]"}` }, c)))),
             category !== "أحذية وإكسسوارات" && React.createElement("div", { className: "flex flex-wrap items-center gap-3 font-body" },
                 React.createElement("label", { htmlFor: "catalog-size-filter", className: "text-sm font-bold text-[#F5F3F0]" }, "فلترة حسب المقاس"),
-                React.createElement("select", { id: "catalog-size-filter", value: selectedSize, onChange: e => setSelectedSize(e.target.value), disabled: !stockReady || !sizeOptions.length, className: "min-h-11 rounded-xl bg-[#2A2724] px-3 text-[#F5F3F0] ring-1 ring-[#3A3632] focus-visible:ring-[#C9A227] disabled:opacity-50" },
+                React.createElement("select", { id: "catalog-size-filter", ref: sizeFilterRef, value: selectedSize, onChange: e => setSelectedSize(e.target.value), disabled: !stockReady || !sizeOptions.length, className: "min-h-11 rounded-xl bg-[#2A2724] px-3 text-[#F5F3F0] ring-1 ring-[#3A3632] focus-visible:ring-[#C9A227] disabled:opacity-50" },
                     React.createElement("option", { value: "" }, shopBySize ? "اختر مقاسك" : "كل المقاسات"),
                     (selectedSize && !sizeOptions.includes(selectedSize) ? [selectedSize, ...sizeOptions] : sizeOptions).map(size =>
                         React.createElement("option", { key: size, value: size }, size))),
