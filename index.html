@@ -286,12 +286,12 @@ async function loadProductsFromDB() {
         .catch(() => {});
     let rows;
     try {
-        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        rows = await fetchAll("products_norm?select=id,name,category,price,old_price,on_offer,size_chart_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
         OFFERS_SUPPORTED = true;
     } catch (e) {
         const message = e instanceof Error ? e.message : String(e);
         if (!/42703|PGRST204/.test(message) || !/old_price|on_offer/.test(message)) throw e;
-        rows = await fetchAll("products_norm?select=id,name,category,price,variants(size,color,stock)&order=sort_order.asc,id.asc");
+        rows = await fetchAll("products_norm?select=id,name,category,price,size_chart_url,variants(size,color,stock)&order=sort_order.asc,id.asc");
         OFFERS_SUPPORTED = false;
     }
     return rows.map(r => ({
@@ -301,6 +301,7 @@ async function loadProductsFromDB() {
         price: Number(r.price) || 0,
         onOffer: !!r.on_offer,
         oldPrice: Number(r.old_price) || 0,
+        sizeChartUrl: httpsImageUrl(r.size_chart_url),
         variants: (r.variants || []).map(v => ({
             size: v.size, color: v.color, stock: Number(v.stock) || 0
         }))
@@ -415,6 +416,15 @@ async function restockAtomic(items) {
 }
 
 // ===== حفظ/تعديل منتج واحد من لوحة التحكم (حمولة صغيرة) =====
+function httpsImageUrl(value) {
+    try {
+        const url = new URL(value);
+        return url.protocol === "https:" && !url.username && !url.password ? url.href : "";
+    } catch {
+        return "";
+    }
+}
+
 async function upsertProductDB(p) {
     const isBundled = !!p.image && p.image === bundledSources.get(p.id);
     await sbRequest("products_norm", {
@@ -424,6 +434,7 @@ async function upsertProductDB(p) {
             id: p.id, name: p.name, category: p.category,
             price: Number(p.price) || 0,
             ...(OFFERS_SUPPORTED ? { on_offer: !!p.onOffer, old_price: p.onOffer ? (Number(p.oldPrice) || null) : null } : {}),
+            size_chart_url: p.sizeChartUrl || null,
             image_url: isBundled ? null : (p.image || null)
         }])
     });
@@ -446,6 +457,7 @@ async function updateProductDB(product, previous) {
         if (product[field] !== previous[field]) changes[field] = product[field];
     }
     if (product.image !== previous.image) changes.image_url = product.image ?? "";
+    if (product.sizeChartUrl !== previous.sizeChartUrl) changes.size_chart_url = product.sizeChartUrl || null;
     if (OFFERS_SUPPORTED) {
         if (product.onOffer !== previous.onOffer) changes.on_offer = product.onOffer;
         const oldPrice = product.onOffer ? product.oldPrice || null : null;
@@ -711,9 +723,11 @@ function ProductModal({ product, cart, preferredSize, onClose, onAddToCart }) {
     const inCart = (cart || []).filter(i => i.productId === product.id && i.size === size && i.color === color).reduce((s, i) => s + i.qty, 0);
     const available = Math.max(0, stock - inCart);
     const [qty, setQty] = useState(1);
+    const [chartOpen, setChartOpen] = useState(false);
+    const [chartError, setChartError] = useState(false);
     useEffect(() => { setQty(1); }, [size, color]);
     return (React.createElement("div", { className: "fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4", onClick: onClose },
-        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
+        React.createElement("div", { className: "bg-[#2A2724] rounded-2xl max-w-md w-full max-h-[90dvh] overflow-y-auto ring-1 ring-[#3A3632] font-body", onClick: e => e.stopPropagation() },
             React.createElement("div", { className: "flex items-center justify-between p-4 border-b border-[#3A3632]" },
                 React.createElement("h2", { className: "font-display font-bold text-[#F5F3F0] text-lg" }, product.name),
                 React.createElement("button", { onClick: onClose, className: "text-[#A8A29A] hover:text-[#F5F3F0]" },
@@ -726,7 +740,22 @@ function ProductModal({ product, cart, preferredSize, onClose, onAddToCart }) {
                         ? React.createElement("span", { className: "font-display font-black text-[#C9A227] text-xl" }, fmt(product.price), product.onOffer && product.oldPrice > product.price && React.createElement("span", { className: "mr-2 text-sm text-[#8A847B] line-through font-body" }, fmt(product.oldPrice)))
                         : React.createElement("span", { className: "font-body text-xs text-[#F0A0A0] bg-[#3A1D1D] px-2 py-1 rounded-full" }, "\u0627\u0644\u0633\u0639\u0631 \u063A\u064A\u0631 \u0645\u062D\u062F\u062F \u0628\u0639\u062F")),
                 React.createElement("div", null,
-                    React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0645\u0642\u0627\u0633"),
+                    React.createElement("div", { className: "mb-2 flex items-center justify-between gap-3" },
+                        React.createElement("p", { className: "text-sm text-[#A8A29A]" }, "المقاس"),
+                        product.sizeChartUrl && React.createElement("button", {
+                            type: "button",
+                            onClick: () => { setChartError(false); setChartOpen(open => !open); },
+                            "aria-expanded": chartOpen,
+                            "aria-controls": chartOpen ? "product-size-chart" : undefined,
+                            className: "rounded-lg bg-[#C9A227] px-3 py-2 text-sm font-bold text-[#22201E]"
+                        }, chartOpen ? "إخفاء جدول المقاسات" : "جدول المقاسات")),
+                    chartOpen && product.sizeChartUrl && React.createElement("div", { id: "product-size-chart", className: "mb-3" },
+                        chartError
+                            ? React.createElement("p", { role: "status", className: "text-sm text-[#F0A0A0]" }, "تعذّر تحميل صورة جدول المقاسات.")
+                            : React.createElement("img", {
+                                src: product.sizeChartUrl, alt: "جدول المقاسات — " + product.name,
+                                onError: () => setChartError(true), className: "w-full rounded-lg"
+                            })),
                     React.createElement("div", { className: "flex gap-2 flex-wrap" }, sizes.map(s => (React.createElement("button", { key: s, onClick: () => chooseSize(s), className: `px-3 py-1.5 rounded-lg text-sm font-bold ${size === s ? "bg-[#F5F3F0] text-[#22201E]" : "bg-[#332F2B] text-[#C4BDB4]"}` }, s))))),
                 colorsForSize.length > 1 && (React.createElement("div", null,
                     React.createElement("p", { className: "text-sm text-[#A8A29A] mb-2" }, "\u0627\u0644\u0644\u0648\u0646"),
@@ -1240,6 +1269,9 @@ function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
     };
     const addVariantRow = () => setVariants(vs => [...vs, { size: "M", color: "عادي", stock: 0 }]);
     const removeVariantRow = (idx) => setVariants(vs => vs.filter((_, i) => i !== idx));
+    const [sizeChartInput, setSizeChartInput] = useState(initial?.sizeChartUrl || "");
+    const sizeChartUrl = httpsImageUrl(sizeChartInput.trim());
+    const sizeChartInvalid = Boolean(sizeChartInput.trim() && !sizeChartUrl);
     const [draftId] = useState(() => initial?.id || genId("prod"));
     const [saved, setSaved] = useState(initial);
     const [saving, setSaving] = useState(false);
@@ -1286,11 +1318,11 @@ function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
     };
     const draft = useMemo(() => ({
         id: draftId, name: name.trim(), category, price: Number(price) || 0,
-        onOffer, oldPrice: Number(oldPrice) || 0, image, variants
-    }), [draftId, name, category, price, onOffer, oldPrice, image, variants]);
+        onOffer, oldPrice: Number(oldPrice) || 0, image, sizeChartUrl, variants
+    }), [draftId, name, category, price, onOffer, oldPrice, image, sizeChartUrl, variants]);
     const keys = variants.map(v => JSON.stringify([v.size, v.color]));
-    const canSave = draft.name && variants.every(v => v.color.trim()) && new Set(keys).size === keys.length;
-    const dirty = !!initial && (["name", "category", "price", "onOffer", "oldPrice", "image"]
+    const canSave = draft.name && !sizeChartInvalid && variants.every(v => v.color.trim()) && new Set(keys).size === keys.length;
+    const dirty = !!initial && (sizeChartInvalid || ["name", "category", "price", "onOffer", "oldPrice", "image", "sizeChartUrl"]
         .some(field => draft[field] !== saved[field]) || JSON.stringify(variants) !== JSON.stringify(saved.variants));
     const pending = dirty || saving || imagePending;
     useEffect(() => {
@@ -1339,6 +1371,17 @@ function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
                     React.createElement("label", { className: "flex items-center gap-2 text-sm text-[#F5F3F0] cursor-pointer" },
                         React.createElement("input", { type: "checkbox", checked: onOffer, disabled: !OFFERS_SUPPORTED, onChange: e => setOnOffer(e.target.checked) }), "منتج في صفحة العروض"),
                     onOffer && React.createElement("input", { type: "number", placeholder: "السعر قبل الخصم (اختياري)", value: oldPrice, disabled: !OFFERS_SUPPORTED, onChange: e => setOldPrice(e.target.value), className: "w-full bg-[#2A2724] rounded-lg px-3 py-2 text-[#F5F3F0] placeholder-[#7A746C] outline-none" })),
+                React.createElement("label", { className: "block space-y-1 text-sm text-[#F5F3F0]" },
+                    React.createElement("span", null, "جدول المقاسات (اختياري)"),
+                    React.createElement("input", {
+                        type: "url", value: sizeChartInput, dir: "ltr",
+                        placeholder: "https://",
+                        onChange: e => setSizeChartInput(e.target.value),
+                        "aria-invalid": sizeChartInvalid || undefined,
+                        className: "w-full bg-[#332F2B] rounded-lg px-3 py-2.5 text-[#F5F3F0] outline-none"
+                    }),
+                    React.createElement("span", { className: sizeChartInvalid ? "text-[#F0A0A0]" : "text-[#A8A29A]" },
+                        sizeChartInvalid ? "أدخل رابط صورة يبدأ بـ https://." : "ألصق الرابط المباشر لصورة جدول المقاسات.")),
                 React.createElement("div", { className: "space-y-2" },
                     React.createElement("p", { className: "text-sm text-[#A8A29A]" }, "\u0627\u0644\u0645\u0642\u0627\u0633\u0627\u062A \u0648\u0627\u0644\u0623\u0644\u0648\u0627\u0646 \u0648\u0627\u0644\u0645\u062E\u0632\u0648\u0646"),
                     variants.map((v, idx) => (React.createElement("div", { key: idx, className: "flex items-center gap-2" },
@@ -1355,6 +1398,7 @@ function ProductForm({ initial, onSave, onAutoSave, onCancel }) {
                 initial ? React.createElement("div", { className: "flex items-center justify-between gap-3 text-sm text-[#F5F3F0]" },
                     React.createElement("span", { role: "status" }, autoError ? "تعذّر الحفظ التلقائي. " + autoError
                         : imagePending ? "جاري قراءة الصورة…"
+                        : sizeChartInvalid ? "تحقق من رابط جدول المقاسات."
                         : dirty && !canSave ? "تأكد من الاسم واللون ومن عدم تكرار المقاس واللون."
                         : saving || dirty ? "جاري الحفظ…" : saved === initial ? "الحفظ التلقائي مفعّل" : "تم الحفظ"),
                     autoError && React.createElement("button", { onClick: () => setAutoError(""), className: "shrink-0 text-[#6EE7A8]" }, "إعادة المحاولة"),
